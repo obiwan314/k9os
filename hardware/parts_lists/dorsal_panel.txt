@@ -1,0 +1,17 @@
+ 1 Arduino Uno
+ 1 Numato Labs Digital and Analog IO Expander Shield
+ 1 SainSmart LCD Module For Arduino 20 X 4, PCB Board, White On Blue
+ http://www.amazon.com/SainSmart-Module-Arduino-Board-White/dp/B003B22UR0/ref=sr_1_1?ie=UTF8&qid=1394128777&sr=8-1&keywords=LCD+20x4+white+on+blue
+12 2N2222 Transistors
+12 2200 Ohm Resistors
+12 1N4007 Diodes
+12 100nF Capacitors
+12 1K Ohm Resistors
+12 4.7K Ohm Resistors
+12 Panel Mount Momentary Assorted Colored Lamp Rectangular Push Button Switch DC 24V
+http://www.amazon.com/Amico-Momentary-Rectangular-Button-Switch/dp/B00858BC42/ref=sr_1_10?ie=UTF8&qid=1383713539&sr=8-10&keywords=push+button+switch+rectangular
+ 6 10 pcs Single Row (L 11MM) Male 1x40 Pin Header Strip 2.54 mm Pin Header
+ http://www.amazon.com/Single-11MM-Male-Header-Strip/dp/B008G8YTUA/ref=pd_sbs_indust_24
+ 5 40P 2.54mm Dupont Cable Female To Female 20cm For Arduino
+ http://www.amazon.com/2-54mm-Dupont-Cable-Female-Arduino/dp/B00E8YJ9R4/ref=sr_1_5?ie=UTF8&qid=1385761380&sr=8-5&keywords=arduino+connectors
+ 2 Solderable PC BreadBoard, 1 Sided PCB
