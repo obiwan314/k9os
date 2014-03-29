@@ -1,9 +1,9 @@
-# OSX ARD_SKETCH=/Users/wreichardt/Documents/Arduino
-# OSX $ARD_LIB=/Users/wreichardt/Documents/Arduino/libraries
+export ARD_SKETCH=/Users/wreichardt/Documents/Arduino
+export ARD_LIB=/Users/wreichardt/Documents/Arduino/libraries
 # PI ARD_SKETCH=/home/pi/sketchbook/
 # PI $ARD_LIB=/usr/share/arduino/libraries
-export ARD_SKETCH=/home/pi/sketchbook/
-export ARD_LIB=/home/pi/sketchbook/libraries
+#export ARD_SKETCH=/home/pi/sketchbook/
+#export ARD_LIB=/home/pi/sketchbook/libraries
 mkdir $ARD_LIB
 cd ..
 ln -s `pwd`/arduino/panel/libraries/LiquidCrystal $ARD_LIB/LiquidCrystal

@@ -11,7 +11,7 @@ Once this is done run:
 cd bin
 sudo ./install.sh
 
-This will install the arduino scripts into the required locations and install and configure the k9os daemon for interfacing over USB to the two arduinos used to control the robot.
+This will install the Arduino scripts into the required locations and install and configure the k9os daemon for interfacing over USB to the two arduinos used to control the robot.
 
 This is a personal research project and any sourcecode or hardware designs are provided here without any warrenty or gaurentee.
 
