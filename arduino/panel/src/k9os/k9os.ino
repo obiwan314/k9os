@@ -264,17 +264,18 @@ int readline(int readch, char *buffer, int len)
   return -1;
 }
 
-void loop(){
-    readKeyboard();
-    //delay(1000);
-    //return;
+void processReceivedMessages(){
     static char buffer[200];
     if (readline(Serial.read(), buffer, 200) > 0) {
         aJsonObject *msg = aJson.parse(buffer);
         processMessage(msg);        
         aJson.deleteItem(msg);
-    }
+    }  
+}
 
+void loop(){
+    readKeyboard();
+    processReceivedMessages();
     if(testmodeStatus>0){
       if(testModeCounter>50){
          clearlcdnow();

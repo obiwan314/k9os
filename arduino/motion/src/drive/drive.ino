@@ -1,12 +1,13 @@
 /*
-  MegaMoto Test Sketch
-  Simply runs a motor back and forth
-  ramping the speed from 0 to full (255)
- 
-  This example code is in the public domain.
+  K9OS drive motor Sketch
+  Controlls Scooter Motors
+  Compass, RC Receiver and
+  Ultrasonic Rangefinder
  */
 #include <Wire.h> //I2C Arduino Library
 #include <math.h>
+#include <aJSON.h>
+
 // megamoto
 int EnablePin = 8;
 int duty;
@@ -24,21 +25,17 @@ const int SPEED_FASTER=60;
 const int SPEED_FASTEST=70;
 const int SPEED_RIDICULOUS=70;
 const int SPEED_LUDICROUS=80;
-const byte CPin = 0;  // analog input channel
-const float pi = 3.14159;
-const int address=0x1E;
-float lastHeading=-2;
-float lastRange=-1;
-int pingPin= 4;
-int CRaw;      // raw A/D value
-float CVal;    // adjusted Amps value
+const int compassI2CAddress=0x1E;
+const int ultrasonicRangeFinderPin= 4;
+const float pi=3.14159;
 
 // Remote Controll
 int ch1; // Here's where we'll keep our channel values
 int ch2;
 int ch3;
 
-int speed=0;
+float lastHeading=-2;
+float lastRange=-1;
 
 void setup() { 
   // Megamoto 
@@ -61,63 +58,13 @@ void setup() {
   Wire.begin();
   
   //Put the HMC5883 IC into the correct operating mode
-  Wire.beginTransmission(address); //open communication with HMC5883
+  Wire.beginTransmission(compassI2CAddress); //open communication with HMC5883
   Wire.write(0x02); //select mode register
   Wire.write(0x00); //continuous measurement mode
   Wire.endTransmission();
 
   Serial.begin(9600); // Pour a bowl of Serial
   
-}
-static inline int8_t sgn(int val) {
-  if (val < 0) return -1;
-  if (val==0) return 0;
-  return 1;
-}
-void controlMotor(int speed,int direction,float bias){
-  
-  int biasSpeedL=0.0;
-  int biasSpeedR=0.0;
-  if(bias==0){
-    biasSpeedR=speed;
-    biasSpeedL=speed;
-  } else {
-    if(bias*sgn(-direction)>0){
-      biasSpeedL=abs(round(speed*bias));
-      biasSpeedR=abs(round(speed*(1.0-bias)));
-    } else {
-      biasSpeedR=abs(round(speed*bias));
-      biasSpeedL=abs(round(speed*(1.0-bias)));
-    }
-  }
-//  Serial.print("bias=");Serial.println(bias);
-//  Serial.print("Speed=");Serial.println(speed);
-//  Serial.print("L=");Serial.println(biasSpeedL);
-//  Serial.print("R=");Serial.println(biasSpeedR);
-
-  if(direction==0){
-    // Stop the motor fast
-    speed=0;
-    analogWrite(PWMPin, 0);
-    analogWrite(PWMPinA, 0);
-    analogWrite(PWMPin2, 0);
-    analogWrite(PWMPinA2, 0);
-    digitalWrite(EnablePin, LOW);    
-  } if(direction>0){
-    // Forward
-    analogWrite(PWMPin, biasSpeedL);
-    analogWrite(PWMPinA, biasSpeedR);
-    analogWrite(PWMPin2, 0);
-    analogWrite(PWMPinA2, 0);
-    digitalWrite(EnablePin, HIGH);      
-  } else {
-    // Backward
-    analogWrite(PWMPin, 0);
-    analogWrite(PWMPinA, 0);
-    analogWrite(PWMPin2, biasSpeedL);
-    analogWrite(PWMPinA2,biasSpeedR);
-    digitalWrite(EnablePin, HIGH);  
-  }
 }
 
 void loop() {
@@ -198,6 +145,59 @@ void loop() {
 //  Serial.println(ch3);
 
 }
+
+static inline int8_t sgn(int val) {
+  if (val < 0) return -1;
+  if (val==0) return 0;
+  return 1;
+}
+
+void controlMotor(int speed,int direction,float bias){
+  
+  int biasSpeedL=0.0;
+  int biasSpeedR=0.0;
+  if(bias==0){
+    biasSpeedR=speed;
+    biasSpeedL=speed;
+  } else {
+    if(bias*sgn(-direction)>0){
+      biasSpeedL=abs(round(speed*bias));
+      biasSpeedR=abs(round(speed*(1.0-bias)));
+    } else {
+      biasSpeedR=abs(round(speed*bias));
+      biasSpeedL=abs(round(speed*(1.0-bias)));
+    }
+  }
+//  Serial.print("bias=");Serial.println(bias);
+//  Serial.print("Speed=");Serial.println(speed);
+//  Serial.print("L=");Serial.println(biasSpeedL);
+//  Serial.print("R=");Serial.println(biasSpeedR);
+
+  if(direction==0){
+    // Stop the motor fast
+    speed=0;
+    analogWrite(PWMPin, 0);
+    analogWrite(PWMPinA, 0);
+    analogWrite(PWMPin2, 0);
+    analogWrite(PWMPinA2, 0);
+    digitalWrite(EnablePin, LOW);    
+  } if(direction>0){
+    // Forward
+    analogWrite(PWMPin, biasSpeedL);
+    analogWrite(PWMPinA, biasSpeedR);
+    analogWrite(PWMPin2, 0);
+    analogWrite(PWMPinA2, 0);
+    digitalWrite(EnablePin, HIGH);      
+  } else {
+    // Backward
+    analogWrite(PWMPin, 0);
+    analogWrite(PWMPinA, 0);
+    analogWrite(PWMPin2, biasSpeedL);
+    analogWrite(PWMPinA2,biasSpeedR);
+    digitalWrite(EnablePin, HIGH);  
+  }
+}
+
 /*
  * Divides a given PWM pin frequency by a divisor.
  * 
@@ -263,28 +263,29 @@ void setPwmFrequency(int pin, int divisor) {
 }
 
 float echoRangeFinder() {
-  pinMode(pingPin, OUTPUT);          // Set pin to OUTPUT
-  digitalWrite(pingPin, LOW);        // Ensure pin is low
+  pinMode(ultrasonicRangeFinderPin, OUTPUT);          // Set pin to OUTPUT
+  digitalWrite(ultrasonicRangeFinderPin, LOW);        // Ensure pin is low
   delayMicroseconds(2);
-  digitalWrite(pingPin, HIGH);       // Start ranging
+  digitalWrite(ultrasonicRangeFinderPin, HIGH);       // Start ranging
   delayMicroseconds(5);              //   with 5 microsecond burst
-  digitalWrite(pingPin, LOW);        // End ranging
-  pinMode(pingPin, INPUT);           // Set pin to INPUT
-  int duration = pulseIn(pingPin, HIGH); // Read echo pulse
+  digitalWrite(ultrasonicRangeFinderPin, LOW);        // End ranging
+  pinMode(ultrasonicRangeFinderPin, INPUT);           // Set pin to INPUT
+  int duration = pulseIn(ultrasonicRangeFinderPin, HIGH); // Read echo pulse
   float inches = duration / 74 / 2;        // Convert to inches
   //Serial.println(inches);            // Display result
   return inches;
 }
+
 float readHeading(){
   int x,y,z; //triple axis data
 
   //Tell the HMC5883 where to begin reading data
-  Wire.beginTransmission(address);
+  Wire.beginTransmission(compassI2CAddress);
   Wire.write(0x03); //select register 3, X MSB register
   Wire.endTransmission();
   
   //Read data from each axis, 2 registers per axis
-  Wire.requestFrom(address, 6);
+  Wire.requestFrom(compassI2CAddress, 6);
   if(6<=Wire.available()){
     x = Wire.read()<<8; //X msb
     x |= Wire.read(); //X lsb
@@ -329,3 +330,79 @@ float readHeading(){
   }
   
 }
+
+int readline(int readch, char *buffer, int len){
+  
+  static int pos = 0;
+  int rpos;
+  
+  if (readch > 0) {
+   
+    switch (readch) {
+      case '\r':
+        rpos = pos;
+        pos = 0;  // Reset position index ready for next time
+        return rpos;
+      default:
+        if (pos < len-1) {
+          buffer[pos++] = readch;
+          buffer[pos] = 0;
+        }
+    }
+  }
+  // No end of line has been found, so return -1.
+  return -1;
+}
+
+void processMessage(aJsonObject *msg){
+      
+    aJsonObject  *rotate = aJson.getObjectItem(msg, "rotate");
+    aJsonObject  *goforward = aJson.getObjectItem(msg, "goforward");
+    aJsonObject  *gobackward = aJson.getObjectItem(msg, "gobackward");
+    aJsonObject  *stopnow = aJson.getObjectItem(msg, "stop");
+    
+   if (rotate->type == aJson_String) {
+      String direction=(String(rotate->valuestring));
+      float bias=0;
+      if(direction.equals("LEFT")){
+        bias=1;
+        controlMotor(SPEED_SLOW,DIRECTION_FORWARD,bias);
+      } else {
+        bias=-1;
+        controlMotor(SPEED_SLOW,DIRECTION_FORWARD,bias);
+      }
+      Serial.println("{\"response\":\"OK\"}");
+    }
+    
+   if (goforward->type == aJson_String) {
+      //lcd.print(String(line2->valuestring));
+      float bias=0;
+      controlMotor(SPEED_SLOW,DIRECTION_FORWARD,bias);
+      Serial.println("{\"response\":\"OK\"}");
+    }
+    
+    if (gobackward->type == aJson_String) {
+      //lcd.print(String(line3->valuestring));
+      float bias=0;
+      controlMotor(SPEED_SLOW,DIRECTION_FORWARD,bias);
+      Serial.println("{\"response\":\"OK\"}");
+    } 
+
+    if (stopnow->type == aJson_True) {
+      float bias=0;
+      controlMotor(0,DIRECTION_STOP,bias);
+      Serial.println("{\"response\":\"OK\"}");
+    }
+}
+
+void processReceivedMessages(){
+    static char buffer[200];
+    if (readline(Serial.read(), buffer, 200) > 0) {
+        aJsonObject *msg = aJson.parse(buffer);
+        processMessage(msg);        
+        aJson.deleteItem(msg);
+    }  
+}
+
+
+

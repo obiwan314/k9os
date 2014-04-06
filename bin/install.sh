@@ -12,5 +12,5 @@ ln -s `pwd`/arduino/panel/src/k9os $ARD_SKETCH
 ln -s `pwd`/arduino/motion/src/drive $ARD_SKETCH
 
 # Install daemon (Must be run as root)
-sudo cp `pwd`/pi/daemon/k9pidaemon /etc/init.d
-sudo update-rc.d k9pidaemon defaults
+#sudo cp `pwd`/pi/daemon/k9pidaemon /etc/init.d
+#sudo update-rc.d k9pidaemon defaults
