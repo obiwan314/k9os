@@ -1,6 +1,6 @@
 /*
   K9OS drive motor Sketch
-  Controlls Scooter Motors
+  Controlls Scooter Motorsl
   Compass, RC Receiver and
   Ultrasonic Rangefinder
  */
@@ -71,6 +71,7 @@ void loop() {
   // To drive the motor in H-bridge mode
   // the power chip inputs must be opposite polarity
   // and the Enable input must be HIGH
+  processReceivedMessages();
   int currentRange=echoRangeFinder();
   if(abs(lastRange-currentRange)>1){
     Serial.print("{\"onRangeChange\":");
