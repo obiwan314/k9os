@@ -25,6 +25,8 @@ const int SPEED_FASTER=60;
 const int SPEED_FASTEST=70;
 const int SPEED_RIDICULOUS=70;
 const int SPEED_LUDICROUS=80;
+const int NO_ROTATION=0;
+const int YES_ROTATION=1;
 const int compassI2CAddress=0x1E;
 const int ultrasonicRangeFinderPin= 4;
 const float pi=3.14159;
@@ -33,9 +35,14 @@ const float pi=3.14159;
 int ch1; // Here's where we'll keep our channel values
 int ch2;
 int ch3;
+int ch4;
 
 float lastHeading=-2;
 float lastRange=-1;
+float persistantBias=0;
+int persistantDirection=0;
+int persistantSpeed=0;
+int persistantRotation=0;
 
 void setup() { 
   // Megamoto 
@@ -53,6 +60,7 @@ void setup() {
   pinMode(5, INPUT); // Set our input pins as such
   pinMode(6, INPUT);
   pinMode(7, INPUT);
+  pinMode(2, INPUT);
 
   // Set up compass
   Wire.begin();
@@ -68,6 +76,7 @@ void setup() {
 }
 
 void loop() {
+  //Serial.println(".");
   // To drive the motor in H-bridge mode
   // the power chip inputs must be opposite polarity
   // and the Enable input must be HIGH
@@ -89,49 +98,55 @@ void loop() {
   ch1 = pulseIn(5, HIGH, 25000); // Read the pulse width of 
   ch2 = pulseIn(6, HIGH, 25000); // each channel
   ch3 = pulseIn(7, HIGH, 25000);
+  ch4 = pulseIn(2, HIGH, 25000);
   float bias=0;
-  //Serial.print("CH3=");Serial.println(ch3);
-  if(ch3<1500&&ch3>1490)
+  //Serial.print("CH$=");Serial.println(ch4);
+  if(ch4<1500&&ch3>1490)
     bias=0;
-  if(ch3<=1490)
+  if(ch4<=1490)
     bias=-((ch3-1490)/190.0)*0.8;
-  if(ch3>=1500)
+  if(ch4>=1500)
     bias=((ch3-1500)/200.0)*0.8;
-  //Serial.print("Bias=");Serial.println(bias);
+//  Serial.print("persistantSpeed=");Serial.println(persistantSpeed);
 
   if(ch1<996){ // This sets SWB as the master motor cut off
-    controlMotor(0,0,bias);
+    if(persistantSpeed>0)
+      if(currentRange>10.0)
+        controlMotor(persistantSpeed,persistantDirection,persistantBias,persistantRotation);
+    else {
+      controlMotor(0,0,bias,NO_ROTATION);
+    }
   } else {
      if(ch2<1400){
-        controlMotor(SPEED_FASTER,DIRECTION_BACKWARD,bias);
+        controlMotor(SPEED_FASTER,DIRECTION_BACKWARD,bias,NO_ROTATION);
      }
      if(ch2>=1400&&ch2<1425){
-        controlMotor(SPEED_FAST,DIRECTION_BACKWARD,bias);
+        controlMotor(SPEED_FAST,DIRECTION_BACKWARD,bias,NO_ROTATION);
       }
       if(ch2>=1425&&ch2<1450){
-          controlMotor(SPEED_SLOW,DIRECTION_BACKWARD,bias);
+          controlMotor(SPEED_SLOW,DIRECTION_BACKWARD,bias,NO_ROTATION);
       }
       if(ch2>=1450&&ch2<1500){
-        controlMotor(0,DIRECTION_STOP,bias);
+        controlMotor(0,DIRECTION_STOP,bias,NO_ROTATION);
       }
       if(currentRange>12.0){
         if(ch2>=1500&&ch2<1525){
-            controlMotor(SPEED_SLOW,DIRECTION_FORWARD,bias);
+            controlMotor(SPEED_SLOW,DIRECTION_FORWARD,bias,NO_ROTATION);
         }
         if(ch2>=1525&&ch2<1550){
-            controlMotor(SPEED_FAST,DIRECTION_FORWARD,bias);
+            controlMotor(SPEED_FAST,DIRECTION_FORWARD,bias,NO_ROTATION);
          }
          if(ch2>=1550&&ch2<1575){
-            controlMotor(SPEED_FASTER,DIRECTION_FORWARD,bias);
+            controlMotor(SPEED_FASTER,DIRECTION_FORWARD,bias,NO_ROTATION);
          }
          if(ch2>=1575&&ch2<1600){
-            controlMotor(SPEED_FASTEST,DIRECTION_FORWARD,bias);
+            controlMotor(SPEED_FASTEST,DIRECTION_FORWARD,bias,NO_ROTATION);
          }
          if(ch2>=1600&&ch2<1625){
-            controlMotor(SPEED_RIDICULOUS,DIRECTION_FORWARD,bias);
+            controlMotor(SPEED_RIDICULOUS,DIRECTION_FORWARD,bias,NO_ROTATION);
          }
          if(ch2>=1625){
-            controlMotor(SPEED_LUDICROUS,DIRECTION_FORWARD,bias);
+            controlMotor(SPEED_LUDICROUS,DIRECTION_FORWARD,bias,NO_ROTATION);
          }
        }
       
@@ -153,8 +168,7 @@ static inline int8_t sgn(int val) {
   return 1;
 }
 
-void controlMotor(int speed,int direction,float bias){
-  
+void controlMotor(int speed,int direction,float bias,int rotate){
   int biasSpeedL=0.0;
   int biasSpeedR=0.0;
   if(bias==0){
@@ -173,29 +187,56 @@ void controlMotor(int speed,int direction,float bias){
 //  Serial.print("Speed=");Serial.println(speed);
 //  Serial.print("L=");Serial.println(biasSpeedL);
 //  Serial.print("R=");Serial.println(biasSpeedR);
-
-  if(direction==0){
-    // Stop the motor fast
-    speed=0;
-    analogWrite(PWMPin, 0);
-    analogWrite(PWMPinA, 0);
-    analogWrite(PWMPin2, 0);
-    analogWrite(PWMPinA2, 0);
-    digitalWrite(EnablePin, LOW);    
-  } if(direction>0){
-    // Forward
-    analogWrite(PWMPin, biasSpeedL);
-    analogWrite(PWMPinA, biasSpeedR);
-    analogWrite(PWMPin2, 0);
-    analogWrite(PWMPinA2, 0);
-    digitalWrite(EnablePin, HIGH);      
+  if(rotate==0){
+    if(direction==0){
+      // Stop the motor fast
+      speed=0;
+      analogWrite(PWMPin, 0);
+      analogWrite(PWMPinA, 0);
+      analogWrite(PWMPin2, 0);
+      analogWrite(PWMPinA2, 0);
+      digitalWrite(EnablePin, LOW);    
+    } if(direction>0){
+      // Forward
+      analogWrite(PWMPin, biasSpeedL);
+      analogWrite(PWMPinA, biasSpeedR);
+      analogWrite(PWMPin2, 0);
+      analogWrite(PWMPinA2, 0);
+      digitalWrite(EnablePin, HIGH);      
+    } else {
+      // Backward
+      analogWrite(PWMPin, 0);
+      analogWrite(PWMPinA, 0);
+      analogWrite(PWMPin2, biasSpeedL);
+      analogWrite(PWMPinA2,biasSpeedR);
+      digitalWrite(EnablePin, HIGH);  
+    }
   } else {
-    // Backward
-    analogWrite(PWMPin, 0);
-    analogWrite(PWMPinA, 0);
-    analogWrite(PWMPin2, biasSpeedL);
-    analogWrite(PWMPinA2,biasSpeedR);
-    digitalWrite(EnablePin, HIGH);  
+    // Rotation makes wheels always run in opposite directions
+    if(direction==0){
+      // Stop the motor fast
+      speed=0;
+      analogWrite(PWMPin, 0);
+      analogWrite(PWMPinA,0);
+      analogWrite(PWMPin2, 0);
+      analogWrite(PWMPinA2, 0);
+      digitalWrite(EnablePin, LOW);    
+    } if(rotate>0){
+      // Left
+      //Serial.println("lf");
+      analogWrite(PWMPin, 30);
+      analogWrite(PWMPinA, 0);
+      analogWrite(PWMPin2, 0);
+      analogWrite(PWMPinA2,30);
+      digitalWrite(EnablePin, HIGH);      
+    } if(rotate<0) {
+      // Backward
+      analogWrite(PWMPin, 0);
+      analogWrite(PWMPinA,30 );
+      analogWrite(PWMPin2,30);
+      analogWrite(PWMPinA2,0);
+      digitalWrite(EnablePin, HIGH);  
+    }    
   }
 }
 
@@ -366,33 +407,54 @@ void processMessage(aJsonObject *msg){
       String direction=(String(rotate->valuestring));
       float bias=0;
       if(direction.equals("LEFT")){
-        bias=1;
-        controlMotor(SPEED_SLOW,DIRECTION_FORWARD,bias);
+        persistantSpeed=SPEED_FAST;
+        persistantDirection=DIRECTION_FORWARD;
+        persistantBias=0.5;
+        persistantRotation=YES_ROTATION;
       } else {
-        bias=-1;
-        controlMotor(SPEED_SLOW,DIRECTION_FORWARD,bias);
+        persistantSpeed=SPEED_FAST;
+        persistantDirection=DIRECTION_FORWARD;
+        persistantBias=-0.5;
+        persistantRotation=-1;
       }
-      Serial.println("{\"response\":\"OK\"}");
+      Serial.println("{\"response\":\"OK rotate\"}");
+    }
+    if (goforward->type == aJson_Int) {
+      int aspeed=goforward->valueint;
+      persistantSpeed=aspeed;
+      persistantDirection=DIRECTION_FORWARD;
+      persistantBias=0;
+      persistantRotation=NO_ROTATION;
+      Serial.println("{\"response\":\"OK goforward\"}");
     }
     
-   if (goforward->type == aJson_String) {
-      //lcd.print(String(line2->valuestring));
-      float bias=0;
-      controlMotor(SPEED_SLOW,DIRECTION_FORWARD,bias);
-      Serial.println("{\"response\":\"OK\"}");
+    if (gobackward->type == aJson_Int) {
+      int aspeed=gobackward->valueint;
+      persistantSpeed=aspeed;     
+      persistantDirection=DIRECTION_BACKWARD;
+      persistantBias=0;
+      persistantRotation=NO_ROTATION;
+     Serial.println("{\"response\":\"OK gobackward\"}");
     }
+
     
     if (gobackward->type == aJson_String) {
       //lcd.print(String(line3->valuestring));
-      float bias=0;
-      controlMotor(SPEED_SLOW,DIRECTION_FORWARD,bias);
-      Serial.println("{\"response\":\"OK\"}");
+      persistantSpeed=SPEED_FAST;
+      persistantDirection=DIRECTION_BACKWARD;
+      persistantBias=0;
+      persistantRotation=NO_ROTATION;
+     Serial.println("{\"response\":\"OK gobackward\"}");
     } 
 
     if (stopnow->type == aJson_True) {
       float bias=0;
-      controlMotor(0,DIRECTION_STOP,bias);
-      Serial.println("{\"response\":\"OK\"}");
+      controlMotor(0,DIRECTION_STOP,bias,NO_ROTATION);
+      persistantSpeed=SPEED_STOP;
+      persistantDirection=DIRECTION_STOP;
+      persistantBias=0;
+      persistantRotation=NO_ROTATION;
+      Serial.println("{\"response\":\"OK stopnow\"}");
     }
 }
 
