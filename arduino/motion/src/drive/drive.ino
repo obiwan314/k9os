@@ -1,16 +1,18 @@
 /*
-  K9OS drive motor Sketch
-  Controlls Scooter Motorsl
-  Compass, RC Receiver and
-  Ultrasonic Rangefinder
+ * K9OS drive motor sketch
+ * Controls Scooter Motors,
+ * Compass, RC Receiver and
+ * Ultrasonic Rangefinder
  */
+
 #include <Wire.h> //I2C Arduino Library
 #include <math.h>
 #include <aJSON.h>
 
-// megamoto
+const float pi=3.14159;
+
+// Megamoto Resources
 int EnablePin = 8;
-int duty;
 int PWMPin = 11;  // Timer2
 int PWMPin2 = 3;
 int PWMPinA = 9;  // Timer2
@@ -26,17 +28,16 @@ const int SPEED_FASTEST=70;
 const int SPEED_RIDICULOUS=70;
 const int SPEED_LUDICROUS=80;
 const int NO_ROTATION=0;
-const int YES_ROTATION=1;
+const int LEFT_ROTATION=1;
+const int RIGHT_ROTATION=-1;
+
+// Compass Constants
 const int compassI2CAddress=0x1E;
+
+// Remote Control
 const int ultrasonicRangeFinderPin= 4;
-const float pi=3.14159;
 
-// Remote Controll
-int ch1; // Here's where we'll keep our channel values
-int ch2;
-int ch3;
-int ch4;
-
+// Globals
 float lastHeading=-2;
 float lastRange=-1;
 float persistantBias=0;
@@ -44,18 +45,18 @@ int persistantDirection=0;
 int persistantSpeed=0;
 int persistantRotation=0;
 
-void setup() { 
-  // Megamoto 
+void setup() {
+  // Megamoto
   // initialize the digital pin as an output.
   // Pin 13 has an LED connected on most Arduino boards:
-  pinMode(EnablePin, OUTPUT);     
+  pinMode(EnablePin, OUTPUT);
   pinMode(PWMPin, OUTPUT);
   pinMode(PWMPin2, OUTPUT);
   pinMode(PWMPinA, OUTPUT);
   pinMode(PWMPinA2, OUTPUT);
   setPwmFrequency(PWMPin, 8);  // change Timer2 divisor to 8 gives 3.9kHz PWM freq
   setPwmFrequency(PWMPinA, 8);  // change Timer2 divisor to 8 gives 3.9kHz PWM freq
-  
+
   // Remote Control
   pinMode(5, INPUT); // Set our input pins as such
   pinMode(6, INPUT);
@@ -64,22 +65,19 @@ void setup() {
 
   // Set up compass
   Wire.begin();
-  
-  //Put the HMC5883 IC into the correct operating mode
+
+  // Put the HMC5883 IC into the correct operating mode
   Wire.beginTransmission(compassI2CAddress); //open communication with HMC5883
   Wire.write(0x02); //select mode register
   Wire.write(0x00); //continuous measurement mode
   Wire.endTransmission();
 
-  Serial.begin(9600); // Pour a bowl of Serial
-  
+  Serial.begin(9600); // Establish connection with raspberri pi
+
 }
 
 void loop() {
-  //Serial.println(".");
-  // To drive the motor in H-bridge mode
-  // the power chip inputs must be opposite polarity
-  // and the Enable input must be HIGH
+
   processReceivedMessages();
   int currentRange=echoRangeFinder();
   if(abs(lastRange-currentRange)>1){
@@ -88,6 +86,7 @@ void loop() {
     Serial.println("}");
     lastRange=currentRange;
   }
+
   float heading=readHeading();
   if(abs(lastHeading-heading)>=2){
     Serial.print("{\"onHeadingChange\":");
@@ -95,70 +94,90 @@ void loop() {
     Serial.println("}");
     lastHeading=heading;
   }
-  ch1 = pulseIn(5, HIGH, 25000); // Read the pulse width of 
-  ch2 = pulseIn(6, HIGH, 25000); // each channel
-  ch3 = pulseIn(7, HIGH, 25000);
-  ch4 = pulseIn(2, HIGH, 25000);
+  
+  processRcTransmitter(currentRange);
+
+}
+
+/**
+ * Map RC receiver values to motor control 
+ *  actions.
+ */
+void processRcTransmitter(int currentRange){
+  // poll current RC receiver values
+  int ch1 = pulseIn(5, HIGH, 25000); // B Switch, Disables everything
+  int ch2 = pulseIn(6, HIGH, 25000); // B Stick vertical
+  int ch3 = pulseIn(7, HIGH, 25000); // B Stick horizontal
+  int ch4 = pulseIn(2, HIGH, 25000); // A Stick horizontal
   float bias=0;
-  //Serial.print("CH$=");Serial.println(ch4);
-  if(ch4<1500&&ch3>1490)
+  Serial.print("ch2=");Serial.println(ch2);
+  Serial.print("ch4=");Serial.println(ch4);
+
+  // Special case, in place rotation
+  if(ch2>=1450&&ch2<1500){
+    // throttle at zero
+    if(ch4<=1450){ // Spin Left
+     controlMotor(SPEED_FASTER,DIRECTION_FORWARD,0.5,LEFT_ROTATION);
+     return;
+    } else if(ch4>=1500){ // Spin Right
+     controlMotor(SPEED_FASTER,DIRECTION_FORWARD,-0.5,RIGHT_ROTATION);
+     return;
+    } 
+    
+  }
+  
+  if(ch4<1500&&ch4>1490)
     bias=0;
   if(ch4<=1490)
-    bias=-((ch3-1490)/190.0)*0.8;
+    bias=-((ch4-1490)/190.0)*0.8;
   if(ch4>=1500)
     bias=((ch3-1500)/200.0)*0.8;
-//  Serial.print("persistantSpeed=");Serial.println(persistantSpeed);
 
   if(ch1<996){ // This sets SWB as the master motor cut off
+    // Master cutoff switch is on or remote is off
     if(persistantSpeed>0)
       if(currentRange>10.0)
+        // Execute raspberry pi commands if no remote is available
         controlMotor(persistantSpeed,persistantDirection,persistantBias,persistantRotation);
     else {
-      controlMotor(0,0,bias,NO_ROTATION);
+        controlMotor(0,0,bias,NO_ROTATION);
+        return;
     }
   } else {
      if(ch2<1400){
-        controlMotor(SPEED_FASTER,DIRECTION_BACKWARD,bias,NO_ROTATION);
+        controlMotor(SPEED_FASTER,DIRECTION_BACKWARD,0,NO_ROTATION);
      }
      if(ch2>=1400&&ch2<1425){
-        controlMotor(SPEED_FAST,DIRECTION_BACKWARD,bias,NO_ROTATION);
+        controlMotor(SPEED_FAST,DIRECTION_BACKWARD,0,NO_ROTATION);
       }
       if(ch2>=1425&&ch2<1450){
-          controlMotor(SPEED_SLOW,DIRECTION_BACKWARD,bias,NO_ROTATION);
+          controlMotor(SPEED_SLOW,DIRECTION_BACKWARD,0,NO_ROTATION);
       }
       if(ch2>=1450&&ch2<1500){
         controlMotor(0,DIRECTION_STOP,bias,NO_ROTATION);
       }
       if(currentRange>12.0){
         if(ch2>=1500&&ch2<1525){
-            controlMotor(SPEED_SLOW,DIRECTION_FORWARD,bias,NO_ROTATION);
+            controlMotor(SPEED_SLOW,DIRECTION_FORWARD,0,NO_ROTATION);
         }
         if(ch2>=1525&&ch2<1550){
-            controlMotor(SPEED_FAST,DIRECTION_FORWARD,bias,NO_ROTATION);
+            controlMotor(SPEED_FAST,DIRECTION_FORWARD,0,NO_ROTATION);
          }
          if(ch2>=1550&&ch2<1575){
-            controlMotor(SPEED_FASTER,DIRECTION_FORWARD,bias,NO_ROTATION);
+            controlMotor(SPEED_FASTER,DIRECTION_FORWARD,0,NO_ROTATION);
          }
          if(ch2>=1575&&ch2<1600){
-            controlMotor(SPEED_FASTEST,DIRECTION_FORWARD,bias,NO_ROTATION);
+            controlMotor(SPEED_FASTEST,DIRECTION_FORWARD,0,NO_ROTATION);
          }
          if(ch2>=1600&&ch2<1625){
-            controlMotor(SPEED_RIDICULOUS,DIRECTION_FORWARD,bias,NO_ROTATION);
+            controlMotor(SPEED_RIDICULOUS,DIRECTION_FORWARD,0,NO_ROTATION);
          }
          if(ch2>=1625){
-            controlMotor(SPEED_LUDICROUS,DIRECTION_FORWARD,bias,NO_ROTATION);
+            controlMotor(SPEED_LUDICROUS,DIRECTION_FORWARD,0,NO_ROTATION);
          }
        }
-      
+
   }
- // Serial.print("Channel 1:"); // Print the value of 
- // Serial.println(ch1);        // each channel
-
-//  Serial.print("Channel 2:");
-//  Serial.println(ch2);
-
-//  Serial.print("Channel 3:");
-//  Serial.println(ch3);
 
 }
 
@@ -195,21 +214,21 @@ void controlMotor(int speed,int direction,float bias,int rotate){
       analogWrite(PWMPinA, 0);
       analogWrite(PWMPin2, 0);
       analogWrite(PWMPinA2, 0);
-      digitalWrite(EnablePin, LOW);    
+      digitalWrite(EnablePin, LOW);
     } if(direction>0){
       // Forward
       analogWrite(PWMPin, biasSpeedL);
       analogWrite(PWMPinA, biasSpeedR);
       analogWrite(PWMPin2, 0);
       analogWrite(PWMPinA2, 0);
-      digitalWrite(EnablePin, HIGH);      
+      digitalWrite(EnablePin, HIGH);
     } else {
       // Backward
       analogWrite(PWMPin, 0);
       analogWrite(PWMPinA, 0);
       analogWrite(PWMPin2, biasSpeedL);
       analogWrite(PWMPinA2,biasSpeedR);
-      digitalWrite(EnablePin, HIGH);  
+      digitalWrite(EnablePin, HIGH);
     }
   } else {
     // Rotation makes wheels always run in opposite directions
@@ -220,7 +239,7 @@ void controlMotor(int speed,int direction,float bias,int rotate){
       analogWrite(PWMPinA,0);
       analogWrite(PWMPin2, 0);
       analogWrite(PWMPinA2, 0);
-      digitalWrite(EnablePin, LOW);    
+      digitalWrite(EnablePin, LOW);
     } if(rotate>0){
       // Left
       //Serial.println("lf");
@@ -228,21 +247,21 @@ void controlMotor(int speed,int direction,float bias,int rotate){
       analogWrite(PWMPinA, 0);
       analogWrite(PWMPin2, 0);
       analogWrite(PWMPinA2,30);
-      digitalWrite(EnablePin, HIGH);      
+      digitalWrite(EnablePin, HIGH);
     } if(rotate<0) {
       // Backward
       analogWrite(PWMPin, 0);
       analogWrite(PWMPinA,30 );
       analogWrite(PWMPin2,30);
       analogWrite(PWMPinA2,0);
-      digitalWrite(EnablePin, HIGH);  
-    }    
+      digitalWrite(EnablePin, HIGH);
+    }
   }
 }
 
 /*
  * Divides a given PWM pin frequency by a divisor.
- * 
+ *
  * The resulting frequency is equal to the base frequency divided by
  * the given divisor:
  *   - Base frequencies:
@@ -253,13 +272,13 @@ void controlMotor(int speed,int direction,float bias,int rotate){
  *        256, and 1024.
  *      o The divisors available on pins 3 and 11 are: 1, 8, 32, 64,
  *        128, 256, and 1024.
- * 
+ *
  * PWM frequencies are tied together in pairs of pins. If one in a
  * pair is changed, the other is also changed to match:
  *   - Pins 5 and 6 are paired (Timer0)
  *   - Pins 9 and 10 are paired (Timer1)
  *   - Pins 3 and 11 are paired (Timer2)
- * 
+ *
  * Note that this function will have side effects on anything else
  * that uses timers:
  *   - Changes on pins 5, 6 may cause the delay() and
@@ -267,12 +286,12 @@ void controlMotor(int speed,int direction,float bias,int rotate){
  *     functions may also be affected.
  *   - Changes on pins 9 or 10 will cause the Servo library to function
  *     incorrectly.
- * 
+ *
  * Thanks to macegr of the Arduino forums for his documentation of the
  * PWM frequency divisors. His post can be viewed at:
  *   http://www.arduino.cc/cgi-bin/yabb2/YaBB.pl?num=1235060559/0#4
  */
- 
+
 void setPwmFrequency(int pin, int divisor) {
   byte mode;
   if(pin == 5 || pin == 6 || pin == 9 || pin == 10) { // Timer0 or Timer1
@@ -284,7 +303,7 @@ void setPwmFrequency(int pin, int divisor) {
       case 1024: mode = 0x05; break;
       default: return;
     }
-    if(pin == 5 || pin == 6) { 
+    if(pin == 5 || pin == 6) {
       TCCR0B = TCCR0B & 0b11111000 | mode; // Timer0
     } else {
       TCCR1B = TCCR1B & 0b11111000 | mode; // Timer1
@@ -325,7 +344,7 @@ float readHeading(){
   Wire.beginTransmission(compassI2CAddress);
   Wire.write(0x03); //select register 3, X MSB register
   Wire.endTransmission();
-  
+
   //Read data from each axis, 2 registers per axis
   Wire.requestFrom(compassI2CAddress, 6);
   if(6<=Wire.available()){
@@ -343,7 +362,7 @@ float readHeading(){
 //        Serial.println(z);
   int cy=-330;
   int cx=33;
-  
+
   int dy=y-cy;
   int dx=x-cx;
 //    Serial.print("dx,dy=");
@@ -370,16 +389,16 @@ float readHeading(){
     //Serial.println("++");
     return rawAngle;
   }
-  
+
 }
 
 int readline(int readch, char *buffer, int len){
-  
+
   static int pos = 0;
   int rpos;
-  
+
   if (readch > 0) {
-   
+
     switch (readch) {
       case '\r':
         rpos = pos;
@@ -397,12 +416,12 @@ int readline(int readch, char *buffer, int len){
 }
 
 void processMessage(aJsonObject *msg){
-      
+
     aJsonObject  *rotate = aJson.getObjectItem(msg, "rotate");
     aJsonObject  *goforward = aJson.getObjectItem(msg, "goforward");
     aJsonObject  *gobackward = aJson.getObjectItem(msg, "gobackward");
     aJsonObject  *stopnow = aJson.getObjectItem(msg, "stop");
-    
+
    if (rotate->type == aJson_String) {
       String direction=(String(rotate->valuestring));
       float bias=0;
@@ -410,12 +429,12 @@ void processMessage(aJsonObject *msg){
         persistantSpeed=SPEED_FAST;
         persistantDirection=DIRECTION_FORWARD;
         persistantBias=0.5;
-        persistantRotation=YES_ROTATION;
+        persistantRotation=LEFT_ROTATION;
       } else {
         persistantSpeed=SPEED_FAST;
         persistantDirection=DIRECTION_FORWARD;
         persistantBias=-0.5;
-        persistantRotation=-1;
+        persistantRotation=RIGHT_ROTATION;
       }
       Serial.println("{\"response\":\"OK rotate\"}");
     }
@@ -427,17 +446,17 @@ void processMessage(aJsonObject *msg){
       persistantRotation=NO_ROTATION;
       Serial.println("{\"response\":\"OK goforward\"}");
     }
-    
+
     if (gobackward->type == aJson_Int) {
       int aspeed=gobackward->valueint;
-      persistantSpeed=aspeed;     
+      persistantSpeed=aspeed;
       persistantDirection=DIRECTION_BACKWARD;
       persistantBias=0;
       persistantRotation=NO_ROTATION;
      Serial.println("{\"response\":\"OK gobackward\"}");
     }
 
-    
+
     if (gobackward->type == aJson_String) {
       //lcd.print(String(line3->valuestring));
       persistantSpeed=SPEED_FAST;
@@ -445,7 +464,7 @@ void processMessage(aJsonObject *msg){
       persistantBias=0;
       persistantRotation=NO_ROTATION;
      Serial.println("{\"response\":\"OK gobackward\"}");
-    } 
+    }
 
     if (stopnow->type == aJson_True) {
       float bias=0;
@@ -462,10 +481,7 @@ void processReceivedMessages(){
     static char buffer[200];
     if (readline(Serial.read(), buffer, 200) > 0) {
         aJsonObject *msg = aJson.parse(buffer);
-        processMessage(msg);        
+        processMessage(msg);
         aJson.deleteItem(msg);
-    }  
+    }
 }
-
-
-
