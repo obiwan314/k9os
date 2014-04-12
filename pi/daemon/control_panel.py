@@ -5,6 +5,8 @@ import time
 import thread
 import threading
 import random
+import rpyc
+from rpyc.utils.server import ThreadedServer # or ForkingServer
 
 __author__ = 'wreichardt'
 
@@ -49,7 +51,7 @@ class Manager(object):
             op.cancel()
         self._event.set()
 
-class ControlPanel():
+class ControlPanel(rpyc.Service):
     BUTTON_1=1
     BUTTON_2=2
     BUTTON_3=4
@@ -67,7 +69,7 @@ class ControlPanel():
     start_control_panel_called = False
 
     def __init__(self):
-        self.ser=serial.Serial('/dev/serial/by-path/platform-bcm2708_usb-usb-0:1.2:1.0',9600)
+        self.ser=serial.Serial('/dev/ttyUSB0',9600)
         self.sio = io.TextIOWrapper(io.BufferedRWPair(self.ser, self.ser, 1), encoding='ascii')
         self.last_light_code=0
         self.confirm_signal = False
