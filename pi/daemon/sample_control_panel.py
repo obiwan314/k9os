@@ -1,12 +1,7 @@
 #!/usr/bin/python
 import control_panel
-import time
-import rpyc
-from rpyc.utils.server import ThreadedServer # or ForkingServer
-
 
 __author__ = 'wreichardt'
-
 class SampleControlPanel(control_panel.ControlPanel):
     pass
     def start_control_panel(self):
@@ -43,6 +38,4 @@ class SampleControlPanel(control_panel.ControlPanel):
         x = 1
 
 panel = SampleControlPanel()
-server = ThreadedServer(SampleControlPanel, port = 12345)
-server.start()
-server.idle()
+panel.idle()

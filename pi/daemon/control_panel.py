@@ -5,8 +5,6 @@ import time
 import thread
 import threading
 import random
-import rpyc
-from rpyc.utils.server import ThreadedServer # or ForkingServer
 
 __author__ = 'wreichardt'
 
@@ -51,7 +49,7 @@ class Manager(object):
             op.cancel()
         self._event.set()
 
-class ControlPanel(rpyc.Service):
+class ControlPanel():
     BUTTON_1=1
     BUTTON_2=2
     BUTTON_3=4
@@ -64,6 +62,9 @@ class ControlPanel(rpyc.Service):
     BUTTON_10=512
     BUTTON_11=1024
     BUTTON_12=2048
+    DIRECTION_LEFT='LEFT'
+    DIRECTION_RIGHT='RIGHT'
+    DIRECTION_STOP='RIGHT'
     current_animation = None
     current_animation_frame = 0
     start_control_panel_called = False
@@ -76,6 +77,32 @@ class ControlPanel(rpyc.Service):
         self.timer= Manager()
         self.timer.add_operation(self.tick, .5)
         #self.timer.add_operation(self.start_control_panel, .5)
+
+    def rotate(self,direction):
+        if direction==self.DIRECTION_LEFT:
+            self.sio.write(unicode('{"rotate":"'+self.DIRECTION_LEFT+'"}'))
+        if direction==self.DIRECTION_RIGHT:
+            self.sio.write(unicode('{"rotate":"'+self.DIRECTION_RIGHT+'"}'))
+        if direction==self.DIRECTION_STOP:
+            self.sio.write(unicode('{"stopnow":true}'))
+
+        self.sio.write(unicode("\r"))
+        self.sio.flush()
+
+    def go_forward(self,speed):
+        self.sio.write(unicode('{"goforward":"+speed+"}'))
+        self.sio.write(unicode("\r"))
+        self.sio.flush()
+
+    def go_backward(self,speed):
+        self.sio.write(unicode('{"gobackward":"+speed+"}'))
+        self.sio.write(unicode("\r"))
+        self.sio.flush()
+
+    def stop(self,speed):
+        self.sio.write(unicode('{"stop":true}'))
+        self.sio.write(unicode("\r"))
+        self.sio.flush()
 
     def clear_lcd(self):
         self.sio.write(unicode('{"clearlcd":true}'))
@@ -347,7 +374,13 @@ class ControlPanel(rpyc.Service):
                 else:
                     self.on_key_up(12)
 
-            time.sleep(.1)
+            if 'onHeadingChange' in object:
+                self.onHeadingChange(object.get('onHeadingChange'))
+
+            if 'onRangeChange' in object:
+                self.onHeadingChange(object.get('onRangeChange'))
+
+        time.sleep(.1)
 
     def on_key_down(self,key_number):
         raise NotImplementedError("must be implemented in subclass")
@@ -355,3 +388,8 @@ class ControlPanel(rpyc.Service):
     def on_key_up(self,key_number):
         raise NotImplementedError("must be implemented in subclass")
 
+    def onHeadingChange(self,key_number):
+        raise NotImplementedError("must be implemented in subclass")
+
+    def onRangeChange(self,key_number):
+        raise NotImplementedError("must be implemented in subclass")

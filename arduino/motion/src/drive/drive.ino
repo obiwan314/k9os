@@ -110,8 +110,6 @@ void processRcTransmitter(int currentRange){
   int ch3 = pulseIn(7, HIGH, 25000); // B Stick horizontal
   int ch4 = pulseIn(2, HIGH, 25000); // A Stick horizontal
   float bias=0;
-  Serial.print("ch2=");Serial.println(ch2);
-  Serial.print("ch4=");Serial.println(ch4);
 
   // Special case, in place rotation
   if(ch2>=1450&&ch2<1500){

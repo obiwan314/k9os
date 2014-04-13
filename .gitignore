@@ -47,3 +47,5 @@ nosetests.xml
 .idea/workspace.xml
 k9os.iml
 Iconr
+arduino/panel/libraries/LiquidCrystal/LiquidCrystal
+arduino/panel/libraries/aJson/aJson
