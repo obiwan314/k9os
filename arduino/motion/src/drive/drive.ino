@@ -110,6 +110,8 @@ void processRcTransmitter(int currentRange){
   int ch3 = pulseIn(7, HIGH, 25000); // B Stick horizontal
   int ch4 = pulseIn(2, HIGH, 25000); // A Stick horizontal
   float bias=0;
+//  Serial.print("ch2=");Serial.println(ch2);
+//  Serial.print("ch4=");Serial.println(ch4);
 
   // Special case, in place rotation
   if(ch2>=1450&&ch2<1500){
@@ -241,16 +243,16 @@ void controlMotor(int speed,int direction,float bias,int rotate){
     } if(rotate>0){
       // Left
       //Serial.println("lf");
-      analogWrite(PWMPin, 30);
+      analogWrite(PWMPin, 50);
       analogWrite(PWMPinA, 0);
       analogWrite(PWMPin2, 0);
-      analogWrite(PWMPinA2,30);
+      analogWrite(PWMPinA2,50);
       digitalWrite(EnablePin, HIGH);
     } if(rotate<0) {
       // Backward
       analogWrite(PWMPin, 0);
-      analogWrite(PWMPinA,30 );
-      analogWrite(PWMPin2,30);
+      analogWrite(PWMPinA,50 );
+      analogWrite(PWMPin2,50);
       analogWrite(PWMPinA2,0);
       digitalWrite(EnablePin, HIGH);
     }

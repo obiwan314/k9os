@@ -36,6 +36,12 @@ class SampleControlPanel(control_panel.ControlPanel):
 
     def on_key_up(self, key_number):
         x = 1
+    def onHeadingChange(self,key_number):
+        x=1
 
-panel = SampleControlPanel()
-panel.idle()
+    def onRangeChange(self,key_number):
+        x=1
+
+if __name__ == '__main__':
+    panel = SampleControlPanel()
+    panel.idle()

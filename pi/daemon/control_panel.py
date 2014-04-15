@@ -70,7 +70,10 @@ class ControlPanel():
     start_control_panel_called = False
 
     def __init__(self):
-        self.ser=serial.Serial('/dev/ttyUSB0',9600)
+        try:
+            self.ser=serial.Serial('/dev/ttyUSB0',9600)
+        except OSError:
+            self.ser=serial.Serial('/dev/tty.usbserial-A9007VIR',9600)
         self.sio = io.TextIOWrapper(io.BufferedRWPair(self.ser, self.ser, 1), encoding='ascii')
         self.last_light_code=0
         self.confirm_signal = False
@@ -297,7 +300,10 @@ class ControlPanel():
         while True:
             received_message=self.sio.readline()[:-1]
             print received_message+"\n"
-            object=json.loads(received_message)
+            try:
+                object=json.loads(received_message)
+            except ValueError:
+                object=={}
 
             if 'response' in object:
                 self.confirm()
