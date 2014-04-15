@@ -64,7 +64,7 @@ class ControlPanel():
     BUTTON_12=2048
     DIRECTION_LEFT='LEFT'
     DIRECTION_RIGHT='RIGHT'
-    DIRECTION_STOP='RIGHT'
+    DIRECTION_STOP='STOP'
     current_animation = None
     current_animation_frame = 0
     start_control_panel_called = False
@@ -87,7 +87,7 @@ class ControlPanel():
         if direction==self.DIRECTION_RIGHT:
             self.sio.write(unicode('{"rotate":"'+self.DIRECTION_RIGHT+'"}'))
         if direction==self.DIRECTION_STOP:
-            self.sio.write(unicode('{"stopnow":true}'))
+            self.sio.write(unicode('{"stop":true}'))
 
         self.sio.write(unicode("\r"))
         self.sio.flush()
@@ -303,7 +303,7 @@ class ControlPanel():
             try:
                 object=json.loads(received_message)
             except ValueError:
-                object=={}
+                object={}
 
             if 'response' in object:
                 self.confirm()
