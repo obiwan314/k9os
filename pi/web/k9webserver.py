@@ -1,6 +1,8 @@
 from flask import Flask, render_template
 import datetime
 import rpyc
+import os
+
 app = Flask(__name__)
 conn = rpyc.connect('192.168.10.10',12345)
 
@@ -10,7 +12,8 @@ def hello():
    timeString = now.strftime("%Y-%m-%d %H:%M")
    templateData = {
       'title' : 'HELLO!',
-      'time': timeString
+      'time': timeString,
+      'sounds':os.listdir("/home/pi/sounds")
       }
    return render_template('main.html', **templateData)
 
@@ -21,7 +24,8 @@ def rotate_left():
     timeString = now.strftime("%Y-%m-%d %H:%M")
     templateData = {
         'title' : 'HELLO!',
-        'time': timeString
+        'time': timeString,
+        'sounds':os.listdir("/home/pi/sounds")
     }
     return render_template('main.html', **templateData)
 
@@ -32,42 +36,62 @@ def rotate_right():
     timeString = now.strftime("%Y-%m-%d %H:%M")
     templateData = {
         'title' : 'HELLO!',
-        'time': timeString
+        'time': timeString,
+        'sounds':os.listdir("/home/pi/sounds")
     }
     return render_template('main.html', **templateData)
 
-@app.route("/stop_all")
-def stop_all():
+@app.route("/stop")
+def stop():
     conn.root.stop()
     now = datetime.datetime.now()
     timeString = now.strftime("%Y-%m-%d %H:%M")
     templateData = {
         'title' : 'HELLO!',
-        'time': timeString
+        'time': timeString,
+        'sounds':os.listdir("/home/pi/sounds")
     }
     return render_template('main.html', **templateData)
 
-@app.route("/go_forward")
-def go_forward():
+@app.route("/forward")
+def forward():
     conn.root.go_forward(30)
     now = datetime.datetime.now()
     timeString = now.strftime("%Y-%m-%d %H:%M")
     templateData = {
         'title' : 'HELLO!',
-        'time': timeString
+        'time': timeString,
+        'sounds':os.listdir("/home/pi/sounds")
     }
     return render_template('main.html', **templateData)
 
-@app.route("/go_backward")
-def go_backward():
+@app.route("/backward")
+def backward():
     conn.root.go_backward(30)
     now = datetime.datetime.now()
     timeString = now.strftime("%Y-%m-%d %H:%M")
     templateData = {
         'title' : 'HELLO!',
-        'time': timeString
+        'time': timeString,
+        'sounds':os.listdir("/home/pi/sounds")
     }
     return render_template('main.html', **templateData)
+
+@app.route("/play/<soundname>")
+def play(soundname=None):
+    if(soundname==None):
+         conn.root.play("insufficent_data.mp3")
+    else:
+         conn.root.play(soundname)
+    now = datetime.datetime.now()
+    timeString = now.strftime("%Y-%m-%d %H:%M")
+    templateData = {
+        'title' : 'HELLO!',
+        'time': timeString,
+        'sounds':os.listdir("/home/pi/sounds")
+    }
+    return render_template('main.html', **templateData)
+
 
 if __name__ == "__main__":
    app.run(host='0.0.0.0', port=80, debug=True)

@@ -1,6 +1,7 @@
 __author__ = 'wreichardt'
 
 import rpyc
+import pygame
 import thread
 import sample_control_panel
 from rpyc.utils.server import ThreadPoolServer # or ForkingServer ThreadPoolServer
@@ -74,10 +75,16 @@ class K9Service(rpyc.Service):
         panel.animation_horizontal_sweep_up()
     def exposed_animation_random(self, *args, **kws):
         panel.animation_random()
+    def exposed_play(self,sound_file_name):
+        print sound_file_name
+        pygame.mixer.music.load("/home/pi/sounds/"+sound_file_name)
+        pygame.mixer.music.play()
 
 if __name__ == '__main__':
     s=rpyc.utils.server.ThreadedServer(K9Service, port=12345)
     thread.start_new(s.start, ())
+    pygame.init()
+    pygame.mixer.init()
     print "Server Running"
     panel = sample_control_panel.SampleControlPanel()
     panel.idle()

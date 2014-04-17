@@ -11,6 +11,10 @@
       &nbsp;<a href="/rotate_right">[RIGHT]</a></p>
       <p><a href="/go_forward">[FORWARD]</a>
           &nbsp;<a href="/go_backward">[BACK]</a></p>
-
+      <ul>
+	{% for sound in sounds %}
+           <li><a href="/play/{{ sound }}">{{sound}}</a></li>
+	{% endfor %}
+      </ul>
    </body>
 </html>
