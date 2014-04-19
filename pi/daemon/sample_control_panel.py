@@ -1,5 +1,6 @@
 #!/usr/bin/python
 import control_panel
+import pygame
 
 __author__ = 'wreichardt'
 class SampleControlPanel(control_panel.ControlPanel):
@@ -7,6 +8,8 @@ class SampleControlPanel(control_panel.ControlPanel):
     def start_control_panel(self):
         self.lcd_write_bulk("Keyboard Test","                    ","Try buttons...")
         control_panel.ControlPanel.start_control_panel(self)
+	pygame.init()
+        pygame.mixer.init()
 
     def on_key_down(self, key_number):
         if key_number == 1:
@@ -33,7 +36,9 @@ class SampleControlPanel(control_panel.ControlPanel):
         if key_number == 7:
             self.set_animation(self.animation_random())
             self.lcd_write_line4("Random")
-
+    def play(self,file):
+	pygame.mixer.music.load(file)
+        pygame.mixer.music.play()
     def on_key_up(self, key_number):
         x = 1
     def onHeadingChange(self,key_number):
@@ -41,6 +46,9 @@ class SampleControlPanel(control_panel.ControlPanel):
 
     def onRangeChange(self,key_number):
         x=1
+    def onSafetyStop(self):
+	print("SAFETY STOP")
+	self.play("/home/pi/sounds/malfunction_in_drive_systems.mp3")	
 
 if __name__ == '__main__':
     panel = SampleControlPanel()

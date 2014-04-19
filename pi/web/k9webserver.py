@@ -1,3 +1,4 @@
+#!/usr/bin/python
 from flask import Flask, render_template
 import datetime
 import rpyc

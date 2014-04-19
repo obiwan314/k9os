@@ -71,9 +71,9 @@ class ControlPanel():
 
     def __init__(self):
         try:
-            self.ser=serial.Serial('/dev/ttyUSB0',9600)
+            self.ser=serial.Serial('/dev/ttyUSB0',115200)
         except OSError:
-            self.ser=serial.Serial('/dev/tty.usbserial-A9007VIR',9600)
+            self.ser=serial.Serial('/dev/tty.usbserial-A9007VIR',115200)
         self.sio = io.TextIOWrapper(io.BufferedRWPair(self.ser, self.ser, 1), encoding='ascii')
         self.last_light_code=0
         self.confirm_signal = False
@@ -386,6 +386,8 @@ class ControlPanel():
             if 'onRangeChange' in object:
                 self.onHeadingChange(object.get('onRangeChange'))
 
+            if 'safetystop' in object:
+                self.onSafetyStop()
         time.sleep(.1)
 
     def on_key_down(self,key_number):
@@ -399,3 +401,6 @@ class ControlPanel():
 
     def onRangeChange(self,key_number):
         raise NotImplementedError("must be implemented in subclass")
+
+    def onSafetyStop(self):
+	raise NotImplementedError("must be implemented in subclass")

@@ -1,3 +1,4 @@
+#!/usr/bin/python
 __author__ = 'wreichardt'
 
 import rpyc
@@ -77,14 +78,16 @@ class K9Service(rpyc.Service):
         panel.animation_random()
     def exposed_play(self,sound_file_name):
         print sound_file_name
-        pygame.mixer.music.load("/home/pi/sounds/"+sound_file_name)
-        pygame.mixer.music.play()
+        panel.play("/home/pi/sounds/"+sound_file_name)
+        #pygame.mixer.music.load("/home/pi/sounds/"+sound_file_name)
+        #pygame.mixer.music.play()
 
 if __name__ == '__main__':
     s=rpyc.utils.server.ThreadedServer(K9Service, port=12345)
     thread.start_new(s.start, ())
-    pygame.init()
-    pygame.mixer.init()
+    #pygame.init()
+    #pygame.mixer.init()
     print "Server Running"
     panel = sample_control_panel.SampleControlPanel()
+    panel.start_control_panel()
     panel.idle()

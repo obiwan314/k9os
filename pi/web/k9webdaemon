@@ -1,22 +1,22 @@
 #! /bin/sh
-# /etc/init.d/k9pidaemon 
+# /etc/init.d/k9webdaemon 
 
 ### BEGIN INIT INFO
-# Provides:          k9pidaemon 
-# Required-Start:    $syslog
+# Provides:          k9webdaemon 
+# Required-Start:    $syslog $k9pidaemon
 # Required-Stop:     $syslog
 # Default-Start:     2 3 4 5
 # Default-Stop:      0 1 6
-# Short-Description: Starts up serial communication to the k9 robot
-# Description:       Reponsible for auto starting the k9 robot. A script which will start / stop a program a boot / shutdown.
+# Short-Description: Starts up web server communication to the k9 robot
+# Description:       Reponsible for auto starting the web server for k9 robot. A script which will start / stop a program a boot / shutdown.
 ### END INIT INFO
 
 # See http://blog.scphillips.com/2013/07/getting-a-python-script-to-run-in-the-background-as-a-service-on-boot/
 
     PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
-    DAEMON=/home/pi/projects/k9/pi/panel/rpc_daemon.py
-    NAME=pik9comm
-    DESC="K9 Serial Communications Daemon"
+    DAEMON=/home/pi/projects/k9/pi/panel/k9webserver.py
+    NAME=pik9web
+    DESC="K9 Web Communications Daemon"
 
     test -x $DAEMON || exit 0
 
