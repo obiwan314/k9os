@@ -30,7 +30,7 @@ const int SPEED_LUDICROUS=80;
 const int NO_ROTATION=0;
 const int LEFT_ROTATION=1;
 const int RIGHT_ROTATION=-1;
-
+const int SAFE_DISTANCE=15;
 // Compass Constants
 const int compassI2CAddress=0x1E;
 
@@ -44,6 +44,7 @@ float persistantBias=0;
 int persistantDirection=0;
 int persistantSpeed=0;
 int persistantRotation=0;
+int safetyStop=0;
 
 void setup() {
   // Megamoto
@@ -72,7 +73,7 @@ void setup() {
   Wire.write(0x00); //continuous measurement mode
   Wire.endTransmission();
 
-  Serial.begin(9600); // Establish connection with raspberri pi
+  Serial.begin(115200); // Establish connection with raspberri pi 115200
 
 }
 
@@ -110,22 +111,20 @@ void processRcTransmitter(int currentRange){
   int ch3 = pulseIn(7, HIGH, 25000); // B Stick horizontal
   int ch4 = pulseIn(2, HIGH, 25000); // A Stick horizontal
   float bias=0;
-//  Serial.print("ch2=");Serial.println(ch2);
-//  Serial.print("ch4=");Serial.println(ch4);
 
   // Special case, in place rotation
-  if(ch2>=1450&&ch2<1500){
+  if(ch2>=1450&&ch2<1500){    
     // throttle at zero
     if(ch4<=1450){ // Spin Left
-     controlMotor(SPEED_FASTER,DIRECTION_FORWARD,0.5,LEFT_ROTATION);
-     return;
+       controlMotor(SPEED_FASTER,DIRECTION_FORWARD,0.5,LEFT_ROTATION);
+       return;
     } else if(ch4>=1500){ // Spin Right
-     controlMotor(SPEED_FASTER,DIRECTION_FORWARD,-0.5,RIGHT_ROTATION);
-     return;
-    } 
-    
+       controlMotor(SPEED_FASTER,DIRECTION_FORWARD,-0.5,RIGHT_ROTATION);
+       return;
+    }     
   }
   
+  // Calculate current bias
   if(ch4<1500&&ch4>1490)
     bias=0;
   if(ch4<=1490)
@@ -133,51 +132,83 @@ void processRcTransmitter(int currentRange){
   if(ch4>=1500)
     bias=((ch3-1500)/200.0)*0.8;
 
+  
   if(ch1<996){ // This sets SWB as the master motor cut off
-    // Master cutoff switch is on or remote is off
-    if(persistantSpeed>0)
-      if(currentRange>10.0)
-        // Execute raspberry pi commands if no remote is available
-        controlMotor(persistantSpeed,persistantDirection,persistantBias,persistantRotation);
-    else {
-        controlMotor(0,0,bias,NO_ROTATION);
-        return;
-    }
-  } else {
-     if(ch2<1400){
-        controlMotor(SPEED_FASTER,DIRECTION_BACKWARD,0,NO_ROTATION);
-     }
-     if(ch2>=1400&&ch2<1425){
-        controlMotor(SPEED_FAST,DIRECTION_BACKWARD,0,NO_ROTATION);
+      // Master cutoff switch is on or remote is off, autonomous behavior permitted
+      if(persistantSpeed>0) {
+          // We are moving autonomously
+          if(currentRange<SAFE_DISTANCE&&persistantDirection==DIRECTION_FORWARD){
+              // Shut down forward motion in from of an obsticle
+              controlMotor(0,0,bias,NO_ROTATION);
+              if(safetyStop==0){
+                 Serial.println("{\"safetystop\":true}");
+                 safetyStop=1;
+              } 
+              return;
+          } else {
+              // Execute raspberry pi commands if no remote is available and no obsticles present
+              controlMotor(persistantSpeed,persistantDirection,persistantBias,persistantRotation);
+              return;
+          }
       }
-      if(ch2>=1425&&ch2<1450){
-          controlMotor(SPEED_SLOW,DIRECTION_BACKWARD,0,NO_ROTATION);
-      }
-      if(ch2>=1450&&ch2<1500){
-        controlMotor(0,DIRECTION_STOP,bias,NO_ROTATION);
-      }
-      if(currentRange>12.0){
-        if(ch2>=1500&&ch2<1525){
-            controlMotor(SPEED_SLOW,DIRECTION_FORWARD,0,NO_ROTATION);
-        }
-        if(ch2>=1525&&ch2<1550){
-            controlMotor(SPEED_FAST,DIRECTION_FORWARD,0,NO_ROTATION);
-         }
-         if(ch2>=1550&&ch2<1575){
-            controlMotor(SPEED_FASTER,DIRECTION_FORWARD,0,NO_ROTATION);
-         }
-         if(ch2>=1575&&ch2<1600){
-            controlMotor(SPEED_FASTEST,DIRECTION_FORWARD,0,NO_ROTATION);
-         }
-         if(ch2>=1600&&ch2<1625){
-            controlMotor(SPEED_RIDICULOUS,DIRECTION_FORWARD,0,NO_ROTATION);
-         }
-         if(ch2>=1625){
-            controlMotor(SPEED_LUDICROUS,DIRECTION_FORWARD,0,NO_ROTATION);
-         }
+   } else {
+       // We are in remote control mode
+       
+       // Reverse
+       if(ch2<1400){
+          controlMotor(SPEED_FASTER,DIRECTION_BACKWARD,0,NO_ROTATION);
+          return;
        }
-
-  }
+       if(ch2>=1400&&ch2<1425){
+          controlMotor(SPEED_FAST,DIRECTION_BACKWARD,0,NO_ROTATION);
+          return;
+        }
+        if(ch2>=1425&&ch2<1450){
+          controlMotor(SPEED_SLOW,DIRECTION_BACKWARD,0,NO_ROTATION);
+          return;
+        }
+        
+        // Stop
+        if(ch2>=1450&&ch2<1500){
+          controlMotor(SPEED_STOP,DIRECTION_STOP,0,NO_ROTATION);
+          return;
+        }
+        
+        // Forward
+        if(currentRange>SAFE_DISTANCE){
+            safetyStop=0;
+            if(ch2>=1500&&ch2<1525){
+                controlMotor(SPEED_SLOW,DIRECTION_FORWARD,0,NO_ROTATION);
+                return;
+            }
+            if(ch2>=1525&&ch2<1550){
+                controlMotor(SPEED_FAST,DIRECTION_FORWARD,0,NO_ROTATION);
+                return;
+             }
+             if(ch2>=1550&&ch2<1575){
+                controlMotor(SPEED_FASTER,DIRECTION_FORWARD,0,NO_ROTATION);
+                return;
+             }
+             if(ch2>=1575&&ch2<1600){
+                controlMotor(SPEED_FASTEST,DIRECTION_FORWARD,0,NO_ROTATION);
+                return;
+             }
+             if(ch2>=1600&&ch2<1625){
+                controlMotor(SPEED_RIDICULOUS,DIRECTION_FORWARD,0,NO_ROTATION);
+                return;
+             }
+             if(ch2>=1625){
+                controlMotor(SPEED_LUDICROUS,DIRECTION_FORWARD,0,NO_ROTATION);
+                return;
+             }
+        } else {
+              if(safetyStop==0){
+                 Serial.println("{\"safetystop\":true}");
+                 safetyStop=1;
+              } 
+             controlMotor(SPEED_STOP,DIRECTION_STOP,0,NO_ROTATION);
+        }
+  } // end remote control Mode
 
 }
 
@@ -416,7 +447,6 @@ int readline(int readch, char *buffer, int len){
 }
 
 void processMessage(aJsonObject *msg){
-
     aJsonObject  *rotate = aJson.getObjectItem(msg, "rotate");
     aJsonObject  *goforward = aJson.getObjectItem(msg, "goforward");
     aJsonObject  *gobackward = aJson.getObjectItem(msg, "gobackward");
@@ -437,6 +467,7 @@ void processMessage(aJsonObject *msg){
         persistantRotation=RIGHT_ROTATION;
       }
       Serial.println("{\"response\":\"OK rotate\"}");
+      return;
     }
     if (goforward->type == aJson_Int) {
       int aspeed=goforward->valueint;
@@ -445,6 +476,7 @@ void processMessage(aJsonObject *msg){
       persistantBias=0;
       persistantRotation=NO_ROTATION;
       Serial.println("{\"response\":\"OK goforward\"}");
+      return;
     }
 
     if (gobackward->type == aJson_Int) {
@@ -454,8 +486,8 @@ void processMessage(aJsonObject *msg){
       persistantBias=0;
       persistantRotation=NO_ROTATION;
      Serial.println("{\"response\":\"OK gobackward\"}");
+     return;
     }
-
 
     if (gobackward->type == aJson_String) {
       //lcd.print(String(line3->valuestring));
@@ -464,6 +496,7 @@ void processMessage(aJsonObject *msg){
       persistantBias=0;
       persistantRotation=NO_ROTATION;
      Serial.println("{\"response\":\"OK gobackward\"}");
+     return;
     }
 
     if (stopnow->type == aJson_True) {
@@ -473,13 +506,17 @@ void processMessage(aJsonObject *msg){
       persistantDirection=DIRECTION_STOP;
       persistantBias=0;
       persistantRotation=NO_ROTATION;
-      Serial.println("{\"response\":\"OK stopnow\"}");
+      Serial.println("{\"response\":\"OK stop\"}");
+      return;
+
     }
+    Serial.println("{\"response\":\"ERROR unknown\"}");
 }
 
 void processReceivedMessages(){
     static char buffer[200];
     if (readline(Serial.read(), buffer, 200) > 0) {
+        Serial.println(buffer);
         aJsonObject *msg = aJson.parse(buffer);
         processMessage(msg);
         aJson.deleteItem(msg);

@@ -43,7 +43,7 @@ void setup()
   lcd.print("");
   
   // Setup Serial Communications
-  Serial.begin(9600);
+  Serial.begin(115200);
   setupKeypad();
   
 }
@@ -274,6 +274,7 @@ void processReceivedMessages(){
 }
 
 void loop(){
+    //Serial.print("."); 
     readKeyboard();
     processReceivedMessages();
     if(testmodeStatus>0){
