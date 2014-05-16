@@ -88,6 +88,6 @@ if __name__ == '__main__':
     #pygame.init()
     #pygame.mixer.init()
     print "Server Running"
-    panel = sample_control_panel.SampleControlPanel()
+    panel = sample_control_panel.SampleArduinoManager()
     panel.start_control_panel()
     panel.idle()
