@@ -5,7 +5,7 @@ import rpyc
 import os
 
 app = Flask(__name__)
-conn = rpyc.connect('192.168.10.10',12345)
+conn = rpyc.connect('192.168.10.27',12345)
 
 @app.route("/")
 def hello():

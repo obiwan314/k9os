@@ -11,14 +11,13 @@
 # Description:       Reponsible for auto starting the k9 robot. A script which will start / stop a program a boot / shutdown.
 ### END INIT INFO
 
-sys.path.append('/pi/projects/k9os/pi/daemon/lib')
-
-from daemon import Daemon
 import sys
+sys.path.append("/home/pi/projects/k9os/pi/lib")
 import time
 import logging
 import subprocess
-
+from daemon import Daemon
+import sample_control_panel
 __author__ = 'wreichardt'
 
 PIDFILE = '/var/run/rphaldaemon.pid'
@@ -33,7 +32,11 @@ class K9Daemon(Daemon):
         # Define your tasks here
         # Anything written in python is permitted
         # For example you can clean up your server logs every hour
-
+        print "Running Daemon..."
+        print "Starting Dorsal Panel Manager"
+        panel = SampleArduinoManager()
+        panel.idle()
+        print "Dorsal Panel manager runnning"
 
         # Logging errors and exceptions
         try:
@@ -45,6 +48,7 @@ class K9Daemon(Daemon):
         while True:
             # The daemon will repeat your tasks according to this variable
             # it's in second so 60 is 1 minute, 3600 is 1 hour, etc.
+            print "Woke Up."
             time.sleep(60)
 
 

@@ -1,0 +1,3 @@
+#! /bin/sh
+sudo cp `pwd`/k9webdaemon /etc/init.d
+sudo update-rc.d k9webdaemon defaults

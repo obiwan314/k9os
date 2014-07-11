@@ -1,5 +1,3 @@
-__author__ = 'wreichardt'
-
 import serial
 import io
 import json
@@ -7,6 +5,8 @@ import time
 import thread
 import threading
 import random
+
+__author__ = 'wreichardt'
 
 def center_message(message):
     isLeft=True
@@ -72,9 +72,11 @@ class ArduinoManager():
     def __init__(self):
         try:
             self.ser=serial.Serial('/dev/ttyUSB0',115200)
+            self.ser1=serial.Serial('/dev/serial/by-path/platform-bcm2708_usb-usb-0:1.3.2:1.0',115200)
         except OSError:
             self.ser=serial.Serial('/dev/tty.usbserial-A9007VIR',115200)
-        self.sio = io.TextIOWrapper(io.BufferedRWPair(self.ser, self.ser, 1), encoding='ascii')
+        self.sioMotor = io.TextIOWrapper(io.BufferedRWPair(self.ser, self.ser, 1), encoding='ascii')
+        self.sioPanel = io.TextIOWrapper(io.BufferedRWPair(self.ser1, self.ser1, 1), encoding='ascii')
         self.last_light_code=0
         self.confirm_signal = False
         self.timer= Manager()
@@ -83,64 +85,64 @@ class ArduinoManager():
 
     def rotate(self,direction):
         if direction==self.DIRECTION_LEFT:
-            self.sio.write(unicode('{"rotate":"'+self.DIRECTION_LEFT+'"}'))
+            self.sioMotor.write(unicode('{"rotate":"'+self.DIRECTION_LEFT+'"}'))
         if direction==self.DIRECTION_RIGHT:
-            self.sio.write(unicode('{"rotate":"'+self.DIRECTION_RIGHT+'"}'))
+            self.sioMotor.write(unicode('{"rotate":"'+self.DIRECTION_RIGHT+'"}'))
         if direction==self.DIRECTION_STOP:
-            self.sio.write(unicode('{"stop":true}'))
+            self.sioMotor.write(unicode('{"stop":true}'))
 
-        self.sio.write(unicode("\r"))
-        self.sio.flush()
+        self.sioMotor.write(unicode("\r"))
+        self.sioMotor.flush()
 
     def go_forward(self,speed):
-        self.sio.write(unicode('{"goforward":"+speed+"}'))
-        self.sio.write(unicode("\r"))
-        self.sio.flush()
+        self.sioMotor.write(unicode('{"goforward":"+speed+"}'))
+        self.sioMotor.write(unicode("\r"))
+        self.sioMotor.flush()
 
     def go_backward(self,speed):
-        self.sio.write(unicode('{"gobackward":"+speed+"}'))
-        self.sio.write(unicode("\r"))
-        self.sio.flush()
+        self.sioMotor.write(unicode('{"gobackward":"+speed+"}'))
+        self.sioMotor.write(unicode("\r"))
+        self.sioMotor.flush()
 
     def stop(self,speed):
-        self.sio.write(unicode('{"stop":true}'))
-        self.sio.write(unicode("\r"))
-        self.sio.flush()
+        self.sioMotor.write(unicode('{"stop":true}'))
+        self.sioMotor.write(unicode("\r"))
+        self.sioMotor.flush()
 
     def clear_lcd(self):
-        self.sio.write(unicode('{"clearlcd":true}'))
-        self.sio.write(unicode("\r"))
-        self.sio.flush()
+        self.sioPanel.write(unicode('{"clearlcd":true}'))
+        self.sioPanel.write(unicode("\r"))
+        self.sioPanel.flush()
         self.wait_for_confirm()
 
     def lcd_back_light_on(self):
-        self.sio.write(unicode('{"backlighton":true}'))
-        self.sio.write(unicode("\r"))
-        self.sio.flush()
+        self.sioPanel.write(unicode('{"backlighton":true}'))
+        self.sioPanel.write(unicode("\r"))
+        self.sioPanel.flush()
 
     def lcd_back_light_off(self):
-        self.sio.write(unicode('{"backlightoff":true}'))
-        self.sio.write(unicode("\r"))
-        self.sio.flush()
+        self.sioPanel.write(unicode('{"backlightoff":true}'))
+        self.sioPanel.write(unicode("\r"))
+        self.sioPanel.flush()
 
     def test_mode_on(self):
-        self.sio.write(unicode('{"testmodeon":true}'))
-        self.sio.write(unicode("\r"))
-        self.sio.flush()
+        self.sioPanel.write(unicode('{"testmodeon":true}'))
+        self.sioPanel.write(unicode("\r"))
+        self.sioPanel.flush()
 
     def test_mode_off(self):
-        self.sio.write(unicode('{"testmodeoff":true}'))
-        self.sio.write(unicode("\r"))
-        self.sio.flush()
+        self.sioPanel.write(unicode('{"testmodeoff":true}'))
+        self.sioPanel.write(unicode("\r"))
+        self.sioPanel.flush()
 
     def lcd_write(self,line,message):
         if len(message)>20:
             short_message=message[:20]
         else:
             short_message=message
-        self.sio.write(unicode('{"line'+str(line)+'":"'+short_message+'"}'))
-        self.sio.write(unicode("\r"))
-        self.sio.flush()
+        self.sioPanel.write(unicode('{"line'+str(line)+'":"'+short_message+'"}'))
+        self.sioPanel.write(unicode("\r"))
+        self.sioPanel.flush()
         self.wait_for_confirm()
         #time.sleep(3)
 
@@ -160,12 +162,12 @@ class ArduinoManager():
         else:
             short_message3=message3
 
-        self.sio.write(unicode('{'))
-        self.sio.write(unicode('"line2":"'+center_message(short_message1)+'",'))
-        self.sio.write(unicode('"line3":"'+center_message(short_message2)+'",'))
-        self.sio.write(unicode('"line4":"'+center_message(short_message3)+'"'))
-        self.sio.write(unicode("}\r"))
-        self.sio.flush()
+        self.sioPanel.write(unicode('{'))
+        self.sioPanel.write(unicode('"line2":"'+center_message(short_message1)+'",'))
+        self.sioPanel.write(unicode('"line3":"'+center_message(short_message2)+'",'))
+        self.sioPanel.write(unicode('"line4":"'+center_message(short_message3)+'"'))
+        self.sioPanel.write(unicode("}\r"))
+        self.sioPanel.flush()
 
     def lcd_write_line1(self,message):
         self.lcd_write(1,center_message(message));
@@ -203,9 +205,9 @@ class ArduinoManager():
             self.current_animation_frame=0
 
     def set_light_code(self,code):
-        self.sio.write(unicode('{"lightcode":'+str(code)+'}'))
-        self.sio.write(unicode("\r"))
-        self.sio.flush()
+        self.sioPanel.write(unicode('{"lightcode":'+str(code)+'}'))
+        self.sioPanel.write(unicode("\r"))
+        self.sioPanel.flush()
         self.last_light_code=code
 
     def animation_vertical_sweep_right(self):
@@ -294,101 +296,119 @@ class ArduinoManager():
     def confirm(self):
         self.confirm_signal = True
 
-    def idle(self):
-        # The main thread lives here and empties the
-        # serial buffer of data from the Arduino
+    def read_serial_panel(self):
         while True:
-            received_message=self.sio.readline()[:-1]
+            received_message=self.sioPanel.readline()[:-1]
             print received_message+"\n"
             try:
                 object=json.loads(received_message)
             except ValueError:
                 object={}
 
-            if 'response' in object:
-                self.confirm()
+            self.dispatch_message(object)
 
-            if 'key1' in object:
-                if object.get('key1') == 'down':
-                    self.on_key_down(1)
-                else:
-                    self.on_key_up(1)
+    def read_serial_motor(self):
+        while True:
+            received_message=self.sioMotor.readline()[:-1]
+            print received_message+"\n"
+            try:
+                object=json.loads(received_message)
+            except ValueError:
+                object={}
 
-            if 'key2' in object:
-                if object.get('key2') == 'down':
-                    self.on_key_down(2)
-                else:
-                    self.on_key_up(2)
+    def idle(self):
+        # The main thread lives here and empties the
+        # serial buffer of data from the Arduino
+        #    time.sleep(.1)
+        thread = threading.Thread(target=self.read_serial_panel)#, args=(serial_port,)
+        thread.start()
+        self.read_serial_motor()
 
-            if 'key3' in object:
-                if object.get('key3') == 'down':
-                    self.on_key_down(3)
-                else:
-                    self.on_key_up(3)
+    def dispatch_message(self,object):
 
-            if 'key4' in object:
-                if object.get('key4') == 'down':
-                    self.on_key_down(4)
-                else:
-                    self.on_key_up(4)
+        if 'response' in object:
+            self.confirm()
 
-            if 'key5' in object:
-                if object.get('key5') == 'down':
-                    self.on_key_down(5)
-                else:
-                    self.on_key_up(5)
+        if 'key1' in object:
+            if object.get('key1') == 'down':
+                self.on_key_down(1)
+            else:
+                self.on_key_up(1)
 
-            if 'key6' in object:
-                if object.get('key6') == 'down':
-                    self.on_key_down(6)
-                else:
-                    self.on_key_up(6)
+        if 'key2' in object:
+            if object.get('key2') == 'down':
+                self.on_key_down(2)
+            else:
+                self.on_key_up(2)
 
-            if 'key7' in object:
-                if object.get('key7') == 'down':
-                    self.on_key_down(7)
-                else:
-                    self.on_key_up(7)
+        if 'key3' in object:
+            if object.get('key3') == 'down':
+                self.on_key_down(3)
+            else:
+                self.on_key_up(3)
 
-            if 'key8' in object:
-                if object.get('key8') == 'down':
-                    self.on_key_down(8)
-                else:
-                    self.on_key_up(8)
+        if 'key4' in object:
+            if object.get('key4') == 'down':
+                self.on_key_down(4)
+            else:
+                self.on_key_up(4)
 
-            if 'key9' in object:
-                if object.get('key9') == 'down':
-                    self.on_key_down(9)
-                else:
-                    self.on_key_up(9)
+        if 'key5' in object:
+            if object.get('key5') == 'down':
+                self.on_key_down(5)
+            else:
+                self.on_key_up(5)
 
-            if 'key10' in object:
-                if object.get('key10') == 'down':
-                    self.on_key_down(10)
-                else:
-                    self.on_key_up(10)
+        if 'key6' in object:
+            if object.get('key6') == 'down':
+                self.on_key_down(6)
+            else:
+                self.on_key_up(6)
 
-            if 'key11' in object:
-                if object.get('key11') == 'down':
-                    self.on_key_down(11)
-                else:
-                    self.on_key_up(11)
+        if 'key7' in object:
+            if object.get('key7') == 'down':
+                self.on_key_down(7)
+            else:
+                self.on_key_up(7)
 
-            if 'key12' in object:
-                if object.get('key12') == 'down':
-                    self.on_key_down(12)
-                else:
-                    self.on_key_up(12)
+        if 'key8' in object:
+            if object.get('key8') == 'down':
+                self.on_key_down(8)
+            else:
+                self.on_key_up(8)
 
-            if 'onHeadingChange' in object:
-                self.onHeadingChange(object.get('onHeadingChange'))
+        if 'key9' in object:
+            if object.get('key9') == 'down':
+                self.on_key_down(9)
+            else:
+                self.on_key_up(9)
 
-            if 'onRangeChange' in object:
-                self.onHeadingChange(object.get('onRangeChange'))
+        if 'key10' in object:
+            if object.get('key10') == 'down':
+                self.on_key_down(10)
+            else:
+                self.on_key_up(10)
 
-            if 'safetystop' in object:
-                self.onSafetyStop()
-        time.sleep(.1)
+        if 'key11' in object:
+            if object.get('key11') == 'down':
+                self.on_key_down(11)
+            else:
+                self.on_key_up(11)
+
+        if 'key12' in object:
+            if object.get('key12') == 'down':
+                self.on_key_down(12)
+            else:
+                self.on_key_up(12)
+
+        if 'onHeadingChange' in object:
+            self.onHeadingChange(object.get('onHeadingChange'))
+
+        if 'onRangeChange' in object:
+            self.onHeadingChange(object.get('onRangeChange'))
+
+        if 'safetystop' in object:
+            self.onSafetyStop()
 
     def on_key_down(self,key_number):
         raise NotImplementedError("must be implemented in subclass")
@@ -403,4 +423,4 @@ class ArduinoManager():
         raise NotImplementedError("must be implemented in subclass")
 
     def onSafetyStop(self):
-	raise NotImplementedError("must be implemented in subclass")
+       raise NotImplementedError("must be implemented in subclass")
