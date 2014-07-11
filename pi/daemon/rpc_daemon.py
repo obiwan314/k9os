@@ -1,10 +1,13 @@
 #!/usr/bin/python
 __author__ = 'wreichardt'
+import sys
+sys.path.append("/home/pi/projects/k9os/pi/lib")
 
 import rpyc
 import pygame
 import thread
-import sample_control_panel
+import sample_arduino_manager
+
 from rpyc.utils.server import ThreadPoolServer # or ForkingServer ThreadPoolServer
 
 class K9Service(rpyc.Service):
@@ -88,6 +91,8 @@ if __name__ == '__main__':
     #pygame.init()
     #pygame.mixer.init()
     print "Server Running"
-    panel = sample_control_panel.SampleArduinoManager()
+    panel = sample_arduino_manager.SampleArduinoManager()
     panel.start_control_panel()
+    panel.lcd_write_line2("       ONLINE         ")
+    panel.lcd_write_line3(" [OFF] [SLEEP] [MENU] ")
     panel.idle()
