@@ -1,5 +1,3 @@
 #! /bin/sh
 sudo cp `pwd`/k9pidaemon /etc/init.d/k9pidaemon
 sudo update-rc.d k9pidaemon defaults
-#sudo cp `pwd`/pi/web/k9webdaemon /etc/init.d
-#sudo update-rc.d k9webdaemon defaults

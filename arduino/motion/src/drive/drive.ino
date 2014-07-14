@@ -276,16 +276,16 @@ void controlMotor(int speed,int direction,float bias,int rotate){
     } if(rotate>0){
       // Left
       //Serial.println("lf");
-      analogWrite(PWMPin, 70);
+      analogWrite(PWMPin, 50);
       analogWrite(PWMPinA, 0);
       analogWrite(PWMPin2, 0);
-      analogWrite(PWMPinA2,70);
+      analogWrite(PWMPinA2,50);
       digitalWrite(EnablePin, HIGH);
     } if(rotate<0) {
       // Backward
       analogWrite(PWMPin, 0);
-      analogWrite(PWMPinA,70 );
-      analogWrite(PWMPin2,70);
+      analogWrite(PWMPinA,50 );
+      analogWrite(PWMPin2,50);
       analogWrite(PWMPinA2,0);
       digitalWrite(EnablePin, HIGH);
     }

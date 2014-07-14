@@ -15,7 +15,8 @@
 
     PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
     DAEMON=/home/pi/projects/k9os/pi/web/k9webserver.py
-    NAME=pik9web
+    PYTHONPATH=/home/pi/projects/k9os/pi/lib
+    NAME=k9webdaemon
     DESC="K9 Web Communications Daemon"
 
     test -x $DAEMON || exit 0

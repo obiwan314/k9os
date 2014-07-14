@@ -6,7 +6,7 @@
 #include <LCD.h>
 #include <LiquidCrystal_I2C.h>
 #include <aJSON.h>
-#include <Servo.h> 
+#include <Servo.h>
 
 #define I2C_ADDR    0x3F  // Define I2C Address where the PCF8574A is
 #define BACKLIGHT_PIN     3
@@ -26,9 +26,9 @@ unsigned long last_print = 0;
 //aJsonStream serial_stream(&Serial);
 LiquidCrystal_I2C lcd(I2C_ADDR,En_pin,Rw_pin,Rs_pin,D4_pin,D5_pin,D6_pin,D7_pin);
 int pattern=0;
-Servo myservoVertical;  // create servo object to control a servo                 
+Servo myservoVertical;  // create servo object to control a servo
 Servo myservoHorizontal;
-int pos = 0;    // variable to store the servo position 
+int pos = 0;    // variable to store the servo position
 int wag=0;
 void setup()
 {
@@ -307,13 +307,13 @@ void loop(){
         testModeCounter=testModeCounter+1;
       }
      }
-     
+       
      if(wag>0){
        wagTailHorizontal();
-     }  
+     }
      if(wag<0){
        wagTailVertical();
-     }  
+     }
      return;
 }
 
@@ -332,8 +332,8 @@ void processMessage(aJsonObject *msg){
     aJsonObject  *clearlcd = aJson.getObjectItem(msg, "clearlcd");
     aJsonObject  *waghorizontal = aJson.getObjectItem(msg, "waghorizontal");
     aJsonObject  *wagvertical = aJson.getObjectItem(msg, "wagvertical");
-    
-  
+
+
     if (waghorizontal->type == aJson_True) {
       wag=1;
       Serial.println("{\"response\":\"OK\"}");
@@ -405,46 +405,46 @@ void processMessage(aJsonObject *msg){
 void wagTailVertical(){
   myservoVertical.attach(9);
 
-  for(pos = 85; pos < 110; pos += 1)  // goes from 0 degrees to 180 degrees 
-  {                                  // in steps of 1 degree 
+  for(pos = 85; pos < 110; pos += 1)  // goes from 0 degrees to 180 degrees
+  {                                  // in steps of 1 degree
     myservoVertical.write(pos);
-    delay(10);                       // waits 15ms for the servo to reach the position 
-  } 
-
-  for(pos = 110; pos>=60; pos-=1)     // goes from 180 degrees to 0 degrees 
-  {                                
-    myservoVertical.write(pos);              // tell servo to go to position in variable 'pos' 
-    //myservo1.write(pos);
-    delay(10);                       // waits 15ms for the servo to reach the position 
+    delay(10);                       // waits 15ms for the servo to reach the position
   }
-  for(pos = 60; pos < 85; pos += 1)  // goes from 0 degrees to 180 degrees 
-  {                                  // in steps of 1 degree 
+
+  for(pos = 110; pos>=60; pos-=1)     // goes from 180 degrees to 0 degrees
+  {
+    myservoVertical.write(pos);              // tell servo to go to position in variable 'pos'
+    //myservo1.write(pos);
+    delay(10);                       // waits 15ms for the servo to reach the position
+  }
+  for(pos = 60; pos < 85; pos += 1)  // goes from 0 degrees to 180 degrees
+  {                                  // in steps of 1 degree
     myservoVertical.write(pos);
-    delay(10);                       // waits 15ms for the servo to reach the position 
-  } 
+    delay(10);                       // waits 15ms for the servo to reach the position
+  }
   myservoVertical.detach();
   wag=0;
 }
 
 void wagTailHorizontal(){
   myservoHorizontal.attach(10);
- for(pos = 85; pos < 100; pos += 1)  // goes from 0 degrees to 180 degrees 
-  {                                  // in steps of 1 degree 
+ for(pos = 85; pos < 100; pos += 1)  // goes from 0 degrees to 180 degrees
+  {                                  // in steps of 1 degree
     myservoHorizontal.write(pos);
-    delay(10);                       // waits 15ms for the servo to reach the position 
-  } 
-
-  for(pos = 100; pos>=70; pos-=1)     // goes from 180 degrees to 0 degrees 
-  {                                
-    myservoHorizontal.write(pos);              // tell servo to go to position in variable 'pos' 
-    delay(10);                       // waits 15ms for the servo to reach the position 
+    delay(10);                       // waits 15ms for the servo to reach the position
   }
-  
-   for(pos = 70; pos < 85; pos += 1)  // goes from 0 degrees to 180 degrees 
-  {                                  // in steps of 1 degree 
+
+  for(pos = 100; pos>=70; pos-=1)     // goes from 180 degrees to 0 degrees
+  {
+    myservoHorizontal.write(pos);              // tell servo to go to position in variable 'pos'
+    delay(10);                       // waits 15ms for the servo to reach the position
+  }
+
+   for(pos = 70; pos < 85; pos += 1)  // goes from 0 degrees to 180 degrees
+  {                                  // in steps of 1 degree
     myservoHorizontal.write(pos);
-    delay(10);                       // waits 15ms for the servo to reach the position 
-  }   
+    delay(10);                       // waits 15ms for the servo to reach the position
+  }
   myservoHorizontal.detach();
   wag=0;
 }

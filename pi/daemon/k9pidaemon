@@ -11,10 +11,9 @@
 # Description:       Reponsible for auto starting the k9 robot. A script which will start / stop a program a boot / shutdown.
 ### END INIT INFO
 
-# See http://blog.scphillips.com/2013/07/getting-a-python-script-to-run-in-the-background-as-a-service-on-boot/
-
     PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
     DAEMON=/home/pi/projects/k9os/pi/daemon/rpc_daemon.py
+    PYTHONPATH=/home/pi/projects/k9os/pi/lib
     NAME=pik9comm
     DESC="K9 Serial Communications Daemon"
 

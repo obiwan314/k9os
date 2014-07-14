@@ -4,8 +4,8 @@ import datetime
 import rpyc
 import os
 
-app = Flask(__name__)
-conn = rpyc.connect('192.168.10.27',12345)
+app = Flask(__name__, template_folder='/home/pi/projects/k9os/pi/web/templates')
+conn = rpyc.connect('localhost',12345)
 
 @app.route("/")
 def hello():
@@ -17,6 +17,30 @@ def hello():
       'sounds':os.listdir("/home/pi/sounds")
       }
    return render_template('main.html', **templateData)
+
+@app.route("/wag_horizontal")
+def wag_horizontal():
+    conn.root.wag_horizontal()
+    now = datetime.datetime.now()
+    timeString = now.strftime("%Y-%m-%d %H:%M")
+    templateData = {
+        'title' : 'HELLO!',
+        'time': timeString,
+        'sounds':os.listdir("/home/pi/sounds")
+    }
+    return render_template('main.html', **templateData)
+
+@app.route("/wag_vertical")
+def wag_vertical():
+    conn.root.wag_vertical()
+    now = datetime.datetime.now()
+    timeString = now.strftime("%Y-%m-%d %H:%M")
+    templateData = {
+        'title' : 'HELLO!',
+        'time': timeString,
+        'sounds':os.listdir("/home/pi/sounds")
+    }
+    return render_template('main.html', **templateData)
 
 @app.route("/rotate_left")
 def rotate_left():

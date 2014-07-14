@@ -65,6 +65,8 @@ class ArduinoManager():
     DIRECTION_LEFT='LEFT'
     DIRECTION_RIGHT='RIGHT'
     DIRECTION_STOP='STOP'
+    DIRECTION_HORIZONTAL='HORIZONTAL'
+    DIRECTION_VERTICAL='VERTICAL'
     current_animation = None
     current_animation_frame = 0
     start_control_panel_called = False
@@ -82,6 +84,15 @@ class ArduinoManager():
         self.timer= Manager()
         self.timer.add_operation(self.tick, .5)
         #self.timer.add_operation(self.start_control_panel, .5)
+
+    def wag(self,direction):
+        if direction==self.DIRECTION_HORIZONTAL:
+            self.sioPanel.write(unicode('{"waghorizontal":true}'))
+        if direction==self.DIRECTION_VERTICAL:
+            self.sioPanel.write(unicode('{"wagvertical":true}'))
+
+        self.sioPanel.write(unicode("\r"))
+        self.sioPanel.flush()
 
     def rotate(self,direction):
         if direction==self.DIRECTION_LEFT:

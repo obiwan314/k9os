@@ -1,6 +1,7 @@
 # !/usr/bin/python
 import arduino_manager
 import pygame
+import time
 
 __author__ = 'wreichardt'
 
@@ -13,6 +14,7 @@ class SampleArduinoManager(arduino_manager.ArduinoManager):
         arduino_manager.ArduinoManager.start_control_panel(self)
         pygame.init()
         pygame.mixer.init()
+        # time.sleep (20)
 
     def on_key_down(self, key_number):
         if key_number == 1:
@@ -39,6 +41,11 @@ class SampleArduinoManager(arduino_manager.ArduinoManager):
         if key_number == 7:
             self.set_animation(self.animation_random())
             self.lcd_write_line4("Random")
+        if key_number == 12:
+            self.set_animation(self.animation_horizontal_sweep_down())
+            self.lcd_write_line4("Shutting Down...")
+            self.play("/home/pi/sounds/closing_down.mp3")
+
 
     def play(self, file):
         pygame.mixer.music.load(file)

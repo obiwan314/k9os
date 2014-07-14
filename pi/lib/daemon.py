@@ -134,9 +134,7 @@ class Daemon(object):
             sys.exit(1)
 
         # Start the daemon
-        print("DAEMINIZEING")
         self.daemonize()
-        print("RUNNING")
         self.run(*args, **kwargs)
 
     def stop(self):
