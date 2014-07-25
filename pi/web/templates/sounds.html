@@ -1,0 +1,11 @@
+{% extends "layout.html" %}
+{% block content %}
+        <h2>Sounds</h2>
+    {% for sound_row in sounds | batch(3, '<p/>') %}
+    <div class="row">
+        {% for sound in sound_row %}
+        <div class="col-md-3"><a class="btn btn-primary btn-lg active" role="button" href="/play/{{ sound }}">{{sound}}</a></div>
+        {% endfor %}
+    </div>
+    {% endfor %}
+{% endblock %}

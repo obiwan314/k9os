@@ -1,22 +1,13 @@
-<!DOCTYPE html>
-   <head>
-      <title>{{ title }}</title>
-   </head>
+{% extends "layout.html" %}
+{% block content %}
+        <h2>System Time is : {{ time }} UTC</h2>
+        <h2>Running Time is : {{ uptime }} </h2>
 
-   <body>
-      <h1>Hello, World!</h1>
-      <h2>The date and time on the server is: {{ time }}</h2>
-      <p><a href="/stop_all">[STOP]</a></p>
-      <p><a href="/rotate_left">[LEFT]</a>
-      &nbsp;<a href="/rotate_right">[RIGHT]</a></p>
-      <p><a href="/go_forward">[FORWARD]</a>
-          &nbsp;<a href="/go_backward">[BACK]</a></p>
-      <p><a href="/wag_vertical">[WAG VERTICAL]</a></p>
-      <p><a href="/wag_horizontal">[WAG HORIZONTAL]</a></p>
-      <ul>
-	{% for sound in sounds %}
-           <li><a href="/play/{{ sound }}">{{sound}}</a></li>
-	{% endfor %}
-      </ul>
-   </body>
-</html>
+        <p><a class="btn btn-danger btn-lg active"
+              role="button" href="/restart">Reboot</a>
+        </p>
+
+        <p><a class="btn btn-danger btn-lg active"
+              role="button" href="/shutdown">Shut Down</a>
+        </p>
+{% endblock %}

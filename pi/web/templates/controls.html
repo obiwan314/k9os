@@ -1,0 +1,34 @@
+{% extends "layout.html" %}
+{% block content %}
+<div class="row">
+    <div class="col-xs-6 col-sm-4" align="right">&nbsp;</div>
+    <div class="col-xs-6 col-sm-4" align="center"></div>
+    <div class="col-xs-6 col-sm-4" align="left">&nbsp;</div>
+</div>
+<div class="row">
+    <div class="col-xs-6 col-sm-4" align="right"><a class="btn btn-primary btn-lg active" href="/go_backward">BACK</a></div>
+    <div class="col-xs-6 col-sm-4"><img src="{{url_for('static', filename='image/K9PLAN2-SIDE.png')}}" /></div>
+    <div class="col-xs-6 col-sm-4" align="left"><a class="btn btn-primary btn-lg active" href="/go_forward">FORWARD</a></div>
+</div>
+<div class="row">
+    <div class="col-xs-6 col-sm-4" align="right"><a class="btn btn-primary btn-lg active" href="/wag_vertical">WAG VERTICAL</a></div>
+    <div class="col-xs-6 col-sm-4" align="center">&nbsp;</div>
+    <div class="col-xs-6 col-sm-4" align="left">&nbsp;</div>
+</div>
+<br/>
+<div class="row">
+    <div class="col-xs-6 col-sm-4" align="right">&nbsp;</div>
+    <div class="col-xs-6 col-sm-4" align="center"><a class="btn btn-primary btn-lg active" href="/go_forward">FORWARD</a></div>
+    <div class="col-xs-6 col-sm-4" align="left">&nbsp;</div>
+</div>
+<div class="row">
+    <div class="col-xs-6 col-sm-4" align="right"><a class="btn btn-primary btn-lg active" href="/rotate_left">LEFT</a></div>
+    <div class="col-xs-6 col-sm-4"><img src="{{url_for('static', filename='image/plan-topside.png')}}" /></div>
+    <div class="col-xs-6 col-sm-4" align="left"><a class="btn btn-primary btn-lg active" href="/rotate_right">RIGHT</a></div>
+</div>
+<div class="row">
+    <div class="col-xs-6 col-sm-4" align="right">&nbsp;</div>
+    <div class="col-xs-6 col-sm-4" align="center"><a class="btn btn-primary btn-lg active" href="/go_backward">BACK</a></div>
+    <div class="col-xs-6 col-sm-4" align="left"><a class="btn btn-primary btn-lg active" href="/wag_horizontal">WAG HORIZONTAL</a></div>
+</div>
+{% endblock %}

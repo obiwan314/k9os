@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<head>
+    <title>k9mk5</title>
+    <link href="{{url_for('static', filename='css/bootstrap.min.css')}}" rel="stylesheet">
+    <script src="{{url_for('static', filename='js/jquery-2.1.1.min.js')}}"></script>
+    <script src="{{url_for('static', filename='js/bootstrap.min.js')}}"></script>
+    <script>
+        $(function() {
+            $('a.btn-primary').click(function (event){
+                event.preventDefault();
+                $.ajax({
+                    url: $(this).attr('href')
+                    ,success: function(response) {
+                        //alert(response)
+                    }
+                })
+                return false;
+            });
+            $('a.btn-danger').click(function (event){
+                event.preventDefault();
+                $.ajax({
+                    url: $(this).attr('href')
+                    ,success: function(response) {
+                        //alert(response)
+                    }
+                })
+                return false;
+            });
+        });
+    </script>
+</head>
+
+<body>
+<div class="container-fluid">
+    <div class="row" style="padding:0 19px">
+        <img src="{{url_for('static', filename='image/k9header.png')}}"/> OS Control System
+    </div>
+</div>
+<div class="container-fluid">
+    <div class="row" style="padding:0 19px">
+        <ul class="nav nav-tabs" role="tablist">
+            <li {% if tab=='home' %} class="active" {% endif %}><a href="/">Home</a></li>
+            <li {% if tab=='sounds' %} class="active" {% endif %}><a href="sounds">Sounds</a></li>
+            <li {% if tab=='controls' %} class="active" {% endif %}><a href="controls">Controls</a></li>
+            <li {% if tab=='panel' %} class="active" {% endif %}><a href="panel">Panel</a></li>
+        </ul>
+
+        {% block content %}{% endblock %}
+
+    </div>
+</div>
+
+</body>
+</html>

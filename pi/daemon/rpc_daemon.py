@@ -4,7 +4,6 @@ import sys
 sys.path.append("/home/pi/projects/k9os/pi/lib")
 
 import rpyc
-import pygame
 import thread
 import sample_arduino_manager
 
@@ -60,45 +59,45 @@ class K9Service(rpyc.Service):
     def exposed_set_light_code(self, *args, **kws):
         arduino_manager.set_light_code(args[0])
     def exposed_animation_vertical_sweep_right(self, *args, **kws):
-        arduino_manager.animation_vertical_sweep_right()
+        arduino_manager.set_animation(arduino_manager.animation_vertical_sweep_right())
     def exposed_animation_vertical_sweep_left(self, *args, **kws):
-        arduino_manager.animation_vertical_sweep_left()
+        arduino_manager.set_animation(arduino_manager.animation_vertical_sweep_left())
     def exposed_animation_horizontal_sweep_down(self, *args, **kws):
-        arduino_manager.animation_horizontal_sweep_down()
+        arduino_manager.set_animation(arduino_manager.animation_horizontal_sweep_down())
     def exposed_animation_diagonal_lr_top(self, *args, **kws):
-        arduino_manager.animation_diagonal_lr_top()
+        arduino_manager.set_animation(arduino_manager.animation_diagonal_lr_top())
     def exposed_animation_diagonal_rl_top(self, *args, **kws):
-        arduino_manager.animation_diagonal_rl_top()
+        arduino_manager.set_animation(arduino_manager.animation_diagonal_rl_top())
     def exposed_animation_strobe(self, *args, **kws):
-        arduino_manager.animation_strobe()
+        arduino_manager.set_animation(arduino_manager.animation_strobe())
     def exposed_animation_blinking_right_arrow(self, *args, **kws):
-        arduino_manager.animation_blinking_right_arrow()
+        arduino_manager.set_animation(arduino_manager.animation_blinking_right_arrow())
     def exposed_animation_blinking_left_arrow(self, *args, **kws):
-        arduino_manager.animation_blinking_left_arrow()
+        arduino_manager.set_animation(arduino_manager.animation_blinking_left_arrow())
     def exposed_animation_diagonal_lr_bottom(self, *args, **kws):
-        arduino_manager.animation_diagonal_lr_bottom()
+        arduino_manager.set_animation(arduino_manager.animation_diagonal_lr_bottom())
     def exposed_animation_diagonal_rl_bottom(self, *args, **kws):
-        arduino_manager.animation_diagonal_rl_bottom()
+        arduino_manager.set_animation(arduino_manager.animation_diagonal_rl_bottom())
     def exposed_animation_horizontal_sweep_up(self, *args, **kws):
-        arduino_manager.animation_horizontal_sweep_up()
+        arduino_manager.set_animation(arduino_manager.animation_horizontal_sweep_up())
     def exposed_animation_random(self, *args, **kws):
-        arduino_manager.animation_random()
+        arduino_manager.set_animation(arduino_manager.animation_random())
     def exposed_play(self,sound_file_name):
         print sound_file_name
         arduino_manager.play("/home/pi/sounds/"+sound_file_name)
-        #pygame.mixer.music.load("/home/pi/sounds/"+sound_file_name)
-        #pygame.mixer.music.play()
+    def exposed_restart(self):
+        arduino_manager.restart()
+    def exposed_shutdown(self):
+        arduino_manager.shutdown()
 
 if __name__ == '__main__':
     s=rpyc.utils.server.ThreadedServer(K9Service, port=12345)
     thread.start_new(s.start, ())
-    #pygame.init()
-    #pygame.mixer.init()
     print "Server Running"
 
     arduino_manager = sample_arduino_manager.SampleArduinoManager()
     arduino_manager.start_control_panel()
-    #arduino_manager.play("/home/pi/sounds/system_restarting.mp3")
+
     arduino_manager.lcd_write_line2("       ONLINE         ")
     arduino_manager.lcd_write_line3(" [OFF] [SLEEP] [MENU] ")
 

@@ -3,8 +3,8 @@
 
 ### BEGIN INIT INFO
 # Provides:          k9pidaemon 
-# Required-Start:    $syslog
-# Required-Stop:     $syslog
+# Required-Start:    alsa-utils
+# Required-Stop:     alsa-utils
 # Default-Start:     2 3 4 5
 # Default-Stop:      0 1 6
 # Short-Description: Starts up serial communication to the k9 robot

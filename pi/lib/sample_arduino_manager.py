@@ -2,6 +2,7 @@
 import arduino_manager
 import pygame
 import time
+import subprocess
 
 __author__ = 'wreichardt'
 
@@ -14,7 +15,18 @@ class SampleArduinoManager(arduino_manager.ArduinoManager):
         arduino_manager.ArduinoManager.start_control_panel(self)
         pygame.init()
         pygame.mixer.init()
+        self.play("/home/pi/sounds/system_restarting.mp3")
         # time.sleep (20)
+
+    def shutdown(self):
+        self.lcd_write_line4("Shutting Down...")
+        self.play("/home/pi/sounds/restarting.mp3")
+        subprocess.call(['/sbin/shutdown', '-h', 'now'])
+
+    def restart(self):
+        self.lcd_write_line4("Shutting Down...")
+        self.play("/home/pi/sounds/closing_down.mp3")
+        subprocess.call(['/sbin/shutdown', '-r', 'now'])
 
     def on_key_down(self, key_number):
         if key_number == 1:
@@ -42,10 +54,8 @@ class SampleArduinoManager(arduino_manager.ArduinoManager):
             self.set_animation(self.animation_random())
             self.lcd_write_line4("Random")
         if key_number == 12:
-            self.set_animation(self.animation_horizontal_sweep_down())
-            self.lcd_write_line4("Shutting Down...")
-            self.play("/home/pi/sounds/closing_down.mp3")
-
+            #self.set_animation(self.animation_horizontal_sweep_down())
+            self.shutdown()
 
     def play(self, file):
         pygame.mixer.music.load(file)

@@ -230,7 +230,12 @@ class ArduinoManager():
         ]
 
     def animation_vertical_sweep_left(self):
-        return self.animation_horizontal_sweep_down()[::-1]
+        return [
+            self.BUTTON_12+self.BUTTON_8+self.BUTTON_4,
+            self.BUTTON_11+self.BUTTON_7+self.BUTTON_3,
+            self.BUTTON_10+self.BUTTON_6+self.BUTTON_2,
+            self.BUTTON_9+self.BUTTON_5+self.BUTTON_1
+        ]
 
     def animation_horizontal_sweep_down(self):
         return [
