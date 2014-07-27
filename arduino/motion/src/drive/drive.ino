@@ -57,8 +57,8 @@ void setup() {
   pinMode(PWMPin2, OUTPUT);
   pinMode(PWMPinA, OUTPUT);
   pinMode(PWMPinA2, OUTPUT);
-  setPwmFrequency(PWMPin, 8);  // change Timer2 divisor to 8 gives 3.9kHz PWM freq
-  setPwmFrequency(PWMPinA, 8);  // change Timer2 divisor to 8 gives 3.9kHz PWM freq
+  setPwmFrequency(PWMPin, 1);  // change Timer2 divisor to 8 gives 3.9kHz PWM freq
+  setPwmFrequency(PWMPinA, 1);  // change Timer2 divisor to 8 gives 3.9kHz PWM freq
 
   // Remote Control
   pinMode(5, INPUT); // Set our input pins as such
@@ -118,10 +118,10 @@ void processRcTransmitter(int currentRange){
   if(ch2>=1450&&ch2<1500){    
     // throttle at zero
     if(ch4<=1450){ // Spin Left
-       controlMotor(SPEED_FASTER,DIRECTION_FORWARD,0.5,LEFT_ROTATION);
+       controlMotor( 120,DIRECTION_FORWARD,0,LEFT_ROTATION);
        return;
     } else if(ch4>=1500){ // Spin Right
-       controlMotor(SPEED_FASTER,DIRECTION_FORWARD,-0.5,RIGHT_ROTATION);
+       controlMotor(120,DIRECTION_FORWARD,0,RIGHT_ROTATION);
        return;
     }     
   }
@@ -276,16 +276,16 @@ void controlMotor(int speed,int direction,float bias,int rotate){
     } if(rotate>0){
       // Left
       //Serial.println("lf");
-      analogWrite(PWMPin, 50);
+      analogWrite(PWMPin, 100);
       analogWrite(PWMPinA, 0);
       analogWrite(PWMPin2, 0);
-      analogWrite(PWMPinA2,50);
+      analogWrite(PWMPinA2,100);
       digitalWrite(EnablePin, HIGH);
     } if(rotate<0) {
       // Backward
       analogWrite(PWMPin, 0);
-      analogWrite(PWMPinA,50 );
-      analogWrite(PWMPin2,50);
+      analogWrite(PWMPinA,100 );
+      analogWrite(PWMPin2,100);
       analogWrite(PWMPinA2,0);
       digitalWrite(EnablePin, HIGH);
     }

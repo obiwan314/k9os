@@ -1,5 +1,6 @@
 {% extends "layout.html" %}
 {% block content %}
+
         <h2>System Time is : {{ time }} UTC</h2>
         <h2>Running Time is : {{ uptime }} </h2>
 
@@ -10,4 +11,8 @@
         <p><a class="btn btn-danger btn-lg active"
               role="button" href="/shutdown">Shut Down</a>
         </p>
+
+        <h2>Heading is : {{ heading }} </h2>
+        <h2>Range is : {{ range }} </h2>
+
 {% endblock %}

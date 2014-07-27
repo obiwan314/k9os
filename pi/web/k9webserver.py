@@ -1,5 +1,5 @@
 #!/usr/bin/python
-from flask import Flask, render_template
+from flask import Flask, render_template , request
 import datetime
 import rpyc
 import os
@@ -7,7 +7,8 @@ import commands
 from datetime import timedelta
 import piUptime
 import math
-runLocally=True
+
+runLocally=not os.path.isdir('/home/pi')
 
 if runLocally:
     app = Flask(__name__, template_folder='/Users/wreichardt/projects/k9os/pi/web/templates',static_url_path='/Users/wreichardt/projects/k9os/pi/web/static')
@@ -33,11 +34,15 @@ def hello():
    else:
        uptime_string="Not Available"
 
+   heading="0"
+
    templateData = {
       'title' : 'HELLO!',
       'time': timeString,
       'tab':'home',
-      'uptime': uptime_string
+      'uptime': uptime_string,
+      'heading':conn.root.get_last_heading(),
+      'range': conn.root.get_last_range()
       }
    return render_template('main.html', **templateData)
 
@@ -77,6 +82,14 @@ def panel():
         'tab':'panel'
     }
     return render_template('panel.html', **templateData)
+
+@app.route("/lcd")
+def lcd():
+    templateData = {
+        'title' : 'HELLO!',
+        'tab':'lcd'
+    }
+    return render_template('lcd.html', **templateData)
 
 @app.route("/wag_horizontal")
 def wag_horizontal():
@@ -153,6 +166,25 @@ def forward():
 @app.route("/backward")
 def backward():
     conn.root.go_backward(30)
+    templateData = {
+        'title' : 'HELLO!'
+    }
+    return render_template('ok.html', **templateData)
+
+@app.route("/lcd_write",methods=['POST'])
+def lcd_write():
+    line1=request.form['line1']
+    line2=request.form['line2']
+    line3=request.form['line3']
+    line4=request.form['line4']
+    if line1!='':
+        conn.root.lcd_write(1,line1.ljust(20))
+    if line2!='':
+        conn.root.lcd_write(2,line2.ljust(20))
+    if line3!='':
+        conn.root.lcd_write(3,line3.ljust(20))
+    if line4!='':
+        conn.root.lcd_write(4,line4.ljust(20))
     templateData = {
         'title' : 'HELLO!'
     }

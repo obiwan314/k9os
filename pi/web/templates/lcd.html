@@ -1,0 +1,44 @@
+{% extends "layout.html" %}
+{% block content %}
+<script>
+    $(function() {
+         $('#lineedit').ajaxForm(function() {
+
+        });
+
+    });
+</script>
+    <p>Write Text to the LCD</p>
+
+    <form id="lineedit" class="form-horizontal" method="POST" action="lcd_write">
+        <div class="form-group">
+            <label for="line1" class="control-label col-xs-2">Line 1</label>
+            <div class="col-xs-10">
+                <input type="text" name="line1" class="form-control" style="width:220px;font-family:'Courier New', Courier, monospace;" id="line1" placeholder="line1" size="20">
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="line2" class="control-label col-xs-2">Line 2</label>
+            <div class="col-xs-10">
+                <input type="text" name="line2" class="form-control" id="line2" style="width:220px;font-family:'Courier New', Courier, monospace;"  placeholder="line2" size="20">
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="line2" class="control-label col-xs-2">Line 3</label>
+            <div class="col-xs-10">
+                <input type="text" name="line3" class="form-control" id="line3" style="width:220px;font-family:'Courier New', Courier, monospace;"  placeholder="line3" size="20">
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="line4" class="control-label col-xs-2">Line 4</label>
+            <div class="col-xs-10">
+                <input type="text" name="line4" class="form-control" id="line4" style="width:220px;font-family:'Courier New', Courier, monospace;"  placeholder="line4" size="20">
+            </div>
+        </div>
+        <div class="form-group">
+            <div class="col-xs-offset-2 col-xs-10">
+                <button type="submit" class="btn btn-primary">Update</button>
+            </div>
+        </div>
+    </form>
+{% endblock %}

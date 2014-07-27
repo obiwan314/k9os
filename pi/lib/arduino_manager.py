@@ -67,6 +67,14 @@ class ArduinoManager():
     DIRECTION_STOP='STOP'
     DIRECTION_HORIZONTAL='HORIZONTAL'
     DIRECTION_VERTICAL='VERTICAL'
+    SPEED_STOP=0;
+    SPEED_SLOW=20;
+    SPEED_FAST=40;
+    SPEED_FASTER=60;
+    SPEED_FASTEST=70;
+    SPEED_RIDICULOUS=80;
+    SPEED_LUDICROUS=90;
+
     current_animation = None
     current_animation_frame = 0
     start_control_panel_called = False
@@ -106,12 +114,12 @@ class ArduinoManager():
         self.sioMotor.flush()
 
     def go_forward(self,speed):
-        self.sioMotor.write(unicode('{"goforward":"+speed+"}'))
+        self.sioMotor.write(unicode('{"goforward":'+str(speed)+'}'))
         self.sioMotor.write(unicode("\r"))
         self.sioMotor.flush()
 
     def go_backward(self,speed):
-        self.sioMotor.write(unicode('{"gobackward":"+speed+"}'))
+        self.sioMotor.write(unicode('{"gobackward":'+str(speed)+'}'))
         self.sioMotor.write(unicode("\r"))
         self.sioMotor.flush()
 
@@ -418,6 +426,7 @@ class ArduinoManager():
                 self.on_key_up(12)
 
         if 'onHeadingChange' in object:
+            print "HEADING CHANGED "+object.get('onHeadingChange')
             self.onHeadingChange(object.get('onHeadingChange'))
 
         if 'onRangeChange' in object:
@@ -432,10 +441,11 @@ class ArduinoManager():
     def on_key_up(self,key_number):
         raise NotImplementedError("must be implemented in subclass")
 
-    def onHeadingChange(self,key_number):
+    def onHeadingChange(self,heading):
+        print "HEADING CHANGED "+heading
         raise NotImplementedError("must be implemented in subclass")
 
-    def onRangeChange(self,key_number):
+    def onRangeChange(self,range):
         raise NotImplementedError("must be implemented in subclass")
 
     def onSafetyStop(self):
