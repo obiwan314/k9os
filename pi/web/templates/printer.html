@@ -1,0 +1,29 @@
+{% extends "layout.html" %}
+{% block content %}
+<script>
+    $(function() {
+         $('#lineedit').ajaxForm(function() {
+
+        });
+
+    });
+</script>
+<h2>Enter Text To Print</h2>
+
+    <form id="lineedit" class="form-horizontal" method="POST" action="print">
+         <div class="form-group">
+             <textarea name="printtext" rows="4" cols="50">
+                Type Text to print here
+             </textarea>
+            <div class="col-xs-offset-2 col-xs-10">
+                <button type="submit" class="btn btn-primary">Update</button>
+            </div>
+        </div>
+    </form>
+<h2>Upload an image to print</h2>
+<form action="upload" method=post enctype=multipart/form-data>
+    <p><input type="file" name="file">
+        <input type="submit" value="Upload">
+</form>
+
+{% endblock %}

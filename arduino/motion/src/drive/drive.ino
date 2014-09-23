@@ -33,6 +33,7 @@ const int NO_ROTATION=0;
 const int LEFT_ROTATION=1;
 const int RIGHT_ROTATION=-1;
 const int SAFE_DISTANCE=15;
+
 // Compass Constants
 const int compassI2CAddress=0x1E;
 

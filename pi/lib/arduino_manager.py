@@ -340,6 +340,8 @@ class ArduinoManager():
             except ValueError:
                 object={}
 
+            self.dispatch_message(object)
+
     def idle(self):
         # The main thread lives here and empties the
         # serial buffer of data from the Arduino
@@ -426,11 +428,10 @@ class ArduinoManager():
                 self.on_key_up(12)
 
         if 'onHeadingChange' in object:
-            print "HEADING CHANGED "+object.get('onHeadingChange')
             self.onHeadingChange(object.get('onHeadingChange'))
 
         if 'onRangeChange' in object:
-            self.onHeadingChange(object.get('onRangeChange'))
+            self.onRangeChange(object.get('onRangeChange'))
 
         if 'safetystop' in object:
             self.onSafetyStop()

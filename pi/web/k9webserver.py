@@ -1,14 +1,23 @@
 #!/usr/bin/python
-from flask import Flask, render_template , request
+from flask import Flask, render_template , request, redirect, url_for
 import datetime
 import rpyc
 import os
-import commands
+import Image
 from datetime import timedelta
 import piUptime
 import math
+from werkzeug import secure_filename
+
+import sys
+sys.path.append("/home/pi/projects/k9os/pi/lib")
+
+from Adafruit_Thermal import *
+
 
 runLocally=not os.path.isdir('/home/pi')
+UPLOAD_FOLDER = '/path/to/the/uploads'
+ALLOWED_EXTENSIONS = set([ 'png'])
 
 if runLocally:
     app = Flask(__name__, template_folder='/Users/wreichardt/projects/k9os/pi/web/templates',static_url_path='/Users/wreichardt/projects/k9os/pi/web/static')
@@ -20,6 +29,8 @@ else:
     conn = rpyc.connect('localhost',12345)
     sound_directory=os.listdir("/home/pi/sounds")
     appPort = 80
+
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
 @app.route("/")
 def hello():
@@ -90,6 +101,14 @@ def lcd():
         'tab':'lcd'
     }
     return render_template('lcd.html', **templateData)
+
+@app.route("/printer")
+def printer():
+    templateData = {
+        'title' : 'HELLO!',
+        'tab':'printer'
+    }
+    return render_template('printer.html', **templateData)
 
 @app.route("/wag_horizontal")
 def wag_horizontal():
@@ -238,6 +257,24 @@ def restart():
 @app.route("/shutdown")
 def shutdown():
     conn.root.shutdown()
+
+@app.route('/upload', methods=['GET', 'POST'])
+def upload_file():
+    if request.method == 'POST':
+        uploadedFile = request.files['file']
+        printer      = Adafruit_Thermal("/dev/ttyAMA0", 19200, timeout=5)
+        printer.printImage(Image.open(uploadedFile), True)
+        printer.feed(10)
+        redirect("/printer")
+
+@app.route('/print', methods=['GET', 'POST'])
+def printout():
+    if request.method == 'POST':
+        printText=request.form['printtext']
+        printer      = Adafruit_Thermal("/dev/ttyAMA0", 19200, timeout=5)
+        printer.println(printText)
+        printer.feed(10)
+        redirect("/printer")
 
 
 if __name__ == "__main__":

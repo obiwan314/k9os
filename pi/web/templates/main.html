@@ -1,6 +1,10 @@
 {% extends "layout.html" %}
 {% block content %}
-
+<script type="text/javascript">
+    setTimeout(function(){
+        location = ''
+    },5000)
+</script>
         <h2>System Time is : {{ time }} UTC</h2>
         <h2>Running Time is : {{ uptime }} </h2>
 
@@ -12,7 +16,9 @@
               role="button" href="/shutdown">Shut Down</a>
         </p>
 
-        <h2>Heading is : {{ heading }} </h2>
-        <h2>Range is : {{ range }} </h2>
+        <h2>Heading is : {{ heading }} Degrees</h2>
+        <h2>Range to Obstacle is : {{ range }} Inches</h2>
+
+
 
 {% endblock %}

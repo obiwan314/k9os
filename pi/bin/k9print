@@ -1,0 +1,11 @@
+#!/usr/bin/python
+__author__ = 'wreichardt'
+import sys
+sys.path.append("/home/pi/projects/k9os/pi/lib")
+import subprocess, time, Image, socket
+
+from Adafruit_Thermal import *
+print sys.argv[1]
+printer      = Adafruit_Thermal("/dev/ttyAMA0", 19200, timeout=5)
+printer.printImage(Image.open(sys.argv[1]), True)
+printer.feed(10)

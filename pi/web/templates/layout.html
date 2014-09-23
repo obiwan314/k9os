@@ -36,12 +36,12 @@
 </head>
 
 <body>
+
 <div class="container-fluid">
     <div class="row" style="padding:0 19px">
-        <img src="{{url_for('static', filename='image/k9header.png')}}"/> OS Control System
+            <div class="col-md-5"><img src="{{url_for('static', filename='image/k9header.png')}}"/> OS Control System </div>
+            <div class="col-md-7" style="padding-top:20px; "><a class="btn btn-warning" href="https://github.com/obiwan314/k9os/issues">Git Hub Issues</a></div>
     </div>
-</div>
-<div class="container-fluid">
     <div class="row" style="padding:0 19px">
         <ul class="nav nav-tabs" role="tablist">
             <li {% if tab=='home' %} class="active" {% endif %}><a href="/">Home</a></li>
@@ -49,6 +49,7 @@
             <li {% if tab=='controls' %} class="active" {% endif %}><a href="controls">Controls</a></li>
             <li {% if tab=='panel' %} class="active" {% endif %}><a href="panel">Panel</a></li>
             <li {% if tab=='lcd' %} class="active" {% endif %}><a href="lcd">LCD Display</a></li>
+            <li {% if tab=='printer' %} class="active" {% endif %}><a href="printer">Printing</a></li>
         </ul>
 
         {% block content %}{% endblock %}

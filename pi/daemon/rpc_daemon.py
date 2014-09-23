@@ -101,8 +101,14 @@ class K9Service(rpyc.Service):
 
     # Audio
     def exposed_play(self,sound_file_name):
-        print sound_file_name
         arduino_manager.play("/home/pi/sounds/"+sound_file_name)
+
+    def exposed_remote_handler(self,handler):
+        arduino_manager.set_remote_callback(handler)
+
+    def exposed_release_handler(self,handler):
+        arduino_manager.set_remote_callback(handler)
+
 
 if __name__ == '__main__':
     s=rpyc.utils.server.ThreadedServer(K9Service, port=12345)
